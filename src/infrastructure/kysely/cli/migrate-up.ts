@@ -1,9 +1,10 @@
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 
+import chalk from 'chalk'
 import { FileMigrationProvider, Migrator } from 'kysely'
 
-import { database } from '../database.js'
+import { database, ensureDatabaseExists } from '../database.js'
 
 async function migrateToLatest() {
   const migrator = new Migrator({
@@ -16,25 +17,32 @@ async function migrateToLatest() {
   })
 
   const { error, results } = await migrator.migrateToLatest()
+
   if (error) {
-    console.error('failed to migrate')
-    console.error(error)
+    console.error(chalk.red('Migration failed:'), error)
     throw error
   }
 
-  if (results && results?.length > 0)
+  if (results && results.length > 0) {
     for (const it of results) {
       if (it.status === 'Success') {
-        console.log(`migration "${it.migrationName}" was executed successfully`)
+        console.log(chalk.green(`Migration "${it.migrationName}" executed successfully`))
       } else if (it.status === 'Error') {
-        console.error(`failed to execute migration "${it.migrationName}"`)
+        console.error(chalk.red(`Failed to execute migration "${it.migrationName}":`), it.error)
       }
     }
-  else {
-    console.log('no migration to run')
+  } else {
+    console.log(chalk.blue('No migrations to run'))
   }
 
   await database.destroy()
 }
 
-await migrateToLatest()
+try {
+  await ensureDatabaseExists()
+  await migrateToLatest()
+  console.log(chalk.green('Migrations completed successfully.'))
+} catch (error) {
+  console.error(chalk.red('An error occurred during migration:'), error)
+  throw error
+}
