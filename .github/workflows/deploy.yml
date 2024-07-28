@@ -46,7 +46,7 @@ jobs:
           method: "PUT"
           customHeaders: '{"Content-Type": "application/json"}'
           preventFailureOnNoResponse: true
-          timeout: 30000
+          timeout: 60000
           data: |
             {
               "service": "wheelz_user",
