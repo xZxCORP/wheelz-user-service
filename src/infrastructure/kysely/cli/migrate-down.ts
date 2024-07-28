@@ -6,7 +6,7 @@ import { FileMigrationProvider, Migrator } from 'kysely'
 
 import { database, ensureDatabaseExists } from '../database.js'
 
-const migrateToLatest = async () => {
+const migrateDown = async () => {
   const migrator = new Migrator({
     db: database,
     provider: new FileMigrationProvider({
@@ -16,7 +16,7 @@ const migrateToLatest = async () => {
     }),
   })
 
-  const { error, results } = await migrator.migrateToLatest()
+  const { error, results } = await migrator.migrateDown()
 
   if (error) {
     console.error(chalk.red('Migration failed:'), error)
@@ -26,13 +26,13 @@ const migrateToLatest = async () => {
   if (results && results.length > 0) {
     for (const it of results) {
       if (it.status === 'Success') {
-        console.log(chalk.green(`Migration "${it.migrationName}" executed successfully`))
+        console.log(chalk.green(`Migration "${it.migrationName}" rolled back successfully`))
       } else if (it.status === 'Error') {
-        console.error(chalk.red(`Failed to execute migration "${it.migrationName}":`), it.error)
+        console.error(chalk.red(`Failed to roll back migration "${it.migrationName}":`), it.error)
       }
     }
   } else {
-    console.log(chalk.blue('No migrations to run'))
+    console.log(chalk.blue('No migrations to roll back'))
   }
 
   await database.destroy()
@@ -40,8 +40,8 @@ const migrateToLatest = async () => {
 
 try {
   await ensureDatabaseExists()
-  await migrateToLatest()
-  console.log(chalk.green('Migrations completed successfully.'))
+  await migrateDown()
+  console.log(chalk.green('Rollbacks completed successfully.'))
 } catch (error) {
   console.error(chalk.red('An error occurred during migration:'), error)
   throw error

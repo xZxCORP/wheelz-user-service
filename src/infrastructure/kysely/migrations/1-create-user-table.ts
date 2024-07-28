@@ -2,7 +2,7 @@ import { type Kysely, sql } from 'kysely'
 
 import { Database } from '../types.js'
 
-export async function up(database: Kysely<Database>): Promise<void> {
+export const up = async (database: Kysely<Database>): Promise<void> => {
   await database.schema
     .createTable('user')
     .addColumn('id', 'serial', (col) => col.primaryKey())
@@ -10,6 +10,6 @@ export async function up(database: Kysely<Database>): Promise<void> {
     .execute()
 }
 
-export async function down(database: Kysely<Database>): Promise<void> {
+export const down = async (database: Kysely<Database>): Promise<void> => {
   await database.schema.dropTable('user').execute()
 }

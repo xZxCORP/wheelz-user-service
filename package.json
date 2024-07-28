@@ -9,6 +9,7 @@
     "dev": "tsx src/index.ts",
     "build": "tsc",
     "migrate:up": "tsx src/infrastructure/kysely/cli/migrate-up.ts",
+    "migrate:down": "tsx src/infrastructure/kysely/cli/migrate-down.ts",
     "lint": "eslint .",
     "test": "glob -c \"tsx --test --test-reporter spec \" \"./tests/**/*.spec.ts\""
   },
