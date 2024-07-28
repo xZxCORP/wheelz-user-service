@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "tsc",
+    "kysely": "kysely",
     "lint": "eslint .",
     "test": "glob -c \"tsx --test --test-reporter spec \" \"./tests/**/*.spec.ts\""
   },
@@ -28,6 +29,7 @@
     "@zcorp/tsconfig": "^1.0.2",
     "eslint": "^8.57.0",
     "glob": "^10.4.1",
+    "kysely-ctl": "^0.9.0",
     "prettier": "^3.3.1",
     "tsx": "^4.12.0",
     "typescript": "^5.4.5"
