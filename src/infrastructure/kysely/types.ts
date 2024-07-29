@@ -4,9 +4,11 @@ export interface Database {
   user: UserTable
 }
 
-//TODO: complete with all fields
 export interface UserTable {
   id: Generated<number>
+  firstname: ColumnType<string | undefined>
+  lastname: ColumnType<string | undefined>
+  email: ColumnType<string | undefined>
   created_at: ColumnType<Date, string | undefined, never>
   updated_at: ColumnType<Date, string | undefined, never>
 }
