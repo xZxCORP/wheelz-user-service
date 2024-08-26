@@ -10,7 +10,6 @@ export interface UserTable {
   lastname: ColumnType<string | undefined>
   email: ColumnType<string | undefined>
   created_at: ColumnType<Date, string | undefined, never>
-  updated_at: ColumnType<Date, string | undefined, never>
 }
 
 export type User = Selectable<UserTable>
