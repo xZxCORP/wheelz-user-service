@@ -2,13 +2,19 @@ import { Hono } from "hono";
 import { UserService } from "../services/user.js";
 import { NewUser, UserUpdate } from "../infrastructure/kysely/types.js";
 import { HTTPException } from "hono/http-exception";
+import { z } from "zod";
+import newUserSchema from "../schema/user/user-create.schema.js";
+import updateUserSchema from "../schema/user/user-update.schema.js";
+import usersResponseSchema from "../schema/user/users-response.schema.js";
+import userResponseSchema from "../schema/user/user-response.schema.js";
 
 const userService = new UserService();
 const userRouter = new Hono();
 
 userRouter.get('/users', async (c) => {
     const response = await userService.index();
-    return c.json({ users: response });
+    const parsedResponse = usersResponseSchema.parse({ users: response });
+    return c.json({ data: parsedResponse });
 });
 
 userRouter.get('/user/:id', async (c) => {
@@ -21,7 +27,9 @@ userRouter.get('/user/:id', async (c) => {
             throw new HTTPException(404, {message: 'No user'});
         }
 
-        return c.json({ user: response });
+        const parsedResponse = userResponseSchema.parse(response[0]);
+
+        return c.json({ data: parsedResponse });
     } catch (err) {
         if (!(err instanceof HTTPException)) {
             throw new HTTPException(500, { message: 'Internal Server Error' });
@@ -32,7 +40,7 @@ userRouter.get('/user/:id', async (c) => {
 }).patch( async (c) => {
     try {
         const userId: number = parseInt(c.req.param('id'));
-        const userParams: UserUpdate = await c.req.json()
+        const userParams: UserUpdate = updateUserSchema.parse(await c.req.json());
 
         const user = await userService.show(userId);
 
@@ -68,7 +76,7 @@ userRouter.get('/user/:id', async (c) => {
 
 userRouter.post('/user', async (c) => {
     try {
-        const userParams: NewUser = await c.req.json();
+        const userParams: NewUser = newUserSchema.parse(await c.req.json());
 
         const user = await userService.findUserByEmail(userParams.email!);
         if (user.length > 0) {
@@ -78,6 +86,9 @@ userRouter.post('/user', async (c) => {
         await userService.create(userParams);
         return c.text("User created", 201);
     } catch (err) {
+        if (err instanceof z.ZodError) {
+            throw new HTTPException(400, { message: err.message });
+          }
         if (!(err instanceof HTTPException)) {
             throw new HTTPException(500, { message: 'Internal Server Error' });
         }
