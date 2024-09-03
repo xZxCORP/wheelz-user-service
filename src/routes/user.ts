@@ -49,7 +49,7 @@ userRouter.get('/user/:id', async (c) => {
         }
 
         userService.update(userId, userParams);
-        return c.text("User Updated");
+        return c.json({message: "User Updated"});
     } catch (err) {
         if (!(err instanceof HTTPException)) {
             throw new HTTPException(500, { message: 'Internal Server Error' });
@@ -68,7 +68,7 @@ userRouter.get('/user/:id', async (c) => {
         }
 
         await userService.destroy(userId);
-        return c.text("User deleted");
+        return c.json({message: "User deleted"});
     } catch(err) {
         return err.getResponse();
     }
@@ -84,7 +84,7 @@ userRouter.post('/user', async (c) => {
         }
 
         await userService.create(userParams);
-        return c.text("User created", 201);
+        return c.json( {message: "User created"}, 201);
     } catch (err) {
         if (err instanceof z.ZodError) {
             throw new HTTPException(400, { message: err.message });
