@@ -1,8 +1,13 @@
-import { z } from "zod";
+import userSchema from "./user.schema.js";
 
-const updateUserSchema = z.object({
-    firstname: z.string().optional(),
-    lastname: z.string().optional(),
-});
+
+const updateUserSchema = userSchema.omit({
+    id: true,
+    created_at: true,
+    email: true
+}).partial({
+    firstname: true,
+    lastname: true
+})
 
 export default updateUserSchema;

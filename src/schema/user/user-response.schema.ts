@@ -1,9 +1,8 @@
-import { z } from "zod";
+import userSchema from "./user.schema.js";
 
-const userResponseSchema = z.object({
-    firstname: z.string(),
-    lastname: z.string(),
-    email: z.string().email(),
-});
+const userResponseSchema = userSchema.omit({
+    id: true,
+    created_at: true
+})
 
 export default userResponseSchema;

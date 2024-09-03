@@ -1,9 +1,10 @@
-import { z } from "zod";
+import userSchema from "./user.schema.js";
 
-const newUserSchema = z.object({
-    firstname: z.string(),
-    lastname: z.string(),
-    email: z.string().email()
+
+const newUserSchema = userSchema.pick({
+    firstname: true,
+    lastname: true,
+    email: true
 });
 
 export default newUserSchema;
