@@ -2,7 +2,6 @@ import { Hono } from "hono";
 import { UserService } from "../services/user.js";
 import { NewUser, UserUpdate } from "../infrastructure/kysely/types.js";
 import { HTTPException } from "hono/http-exception";
-import { z } from "zod";
 import newUserSchema from "../schema/user/user-create.schema.js";
 import updateUserSchema from "../schema/user/user-update.schema.js";
 import usersResponseSchema from "../schema/user/users-response.schema.js";
@@ -18,84 +17,52 @@ userRouter.get('/users', async (c) => {
 });
 
 userRouter.get('/user/:id', async (c) => {
-    try {
-        const userId: number = parseInt(c.req.param('id'));
+    const userId: number = parseInt(c.req.param('id'));
 
-        const response = await userService.show(userId);
+    const response = await userService.show(userId);
 
-        if (response.length === 0) {
-            throw new HTTPException(404, {message: 'No user'});
-        }
+    if (response.length === 0) {
+        throw new HTTPException(404, {message: 'No user'});
+    }
 
-        const parsedResponse = userResponseSchema.parse(response[0]);
+    const parsedResponse = userResponseSchema.parse(response[0]);
 
-        return c.json({ data: parsedResponse });
-    } catch (err) {
-        if (!(err instanceof HTTPException)) {
-            throw new HTTPException(500, { message: 'Internal Server Error' });
-        }
-
-        return err.getResponse();
-    };
+    return c.json({ data: parsedResponse });
 }).patch( async (c) => {
-    try {
-        const userId: number = parseInt(c.req.param('id'));
-        const userParams: UserUpdate = updateUserSchema.parse(await c.req.json());
+    const userId: number = parseInt(c.req.param('id'));
+    const userParams: UserUpdate = updateUserSchema.parse(await c.req.json());
 
-        const user = await userService.show(userId);
+    const user = await userService.show(userId);
 
-        if (user.length === 0) {
-            throw new HTTPException(404, {message: 'No user'});
-        }
-
-        userService.update(userId, userParams);
-        return c.json({message: "User Updated"});
-    } catch (err) {
-        if (!(err instanceof HTTPException)) {
-            throw new HTTPException(500, { message: 'Internal Server Error' });
-        }
-
-        return err.getResponse();
+    if (user.length === 0) {
+        throw new HTTPException(404, {message: 'No user'});
     }
+
+    userService.update(userId, userParams);
+    return c.json({message: "User Updated"});
 }).delete(async (c) => {
-    try {
-        const userId: number = parseInt(c.req.param('id'));
+    const userId: number = parseInt(c.req.param('id'));
 
-        const user = await userService.show(userId);
+    const user = await userService.show(userId);
 
-        if (user.length === 0) {
-            throw new HTTPException(404, {message: 'No user'});
-        }
-
-        await userService.destroy(userId);
-        return c.json({message: "User deleted"});
-    } catch(err) {
-        return err.getResponse();
+    if (user.length === 0) {
+        throw new HTTPException(404, {message: 'No user'});
     }
+
+    await userService.destroy(userId);
+    return c.json({message: "User deleted"});
 });
 
 userRouter.post('/user', async (c) => {
-    try {
-        const userParams: NewUser = newUserSchema.parse(await c.req.json());
+    const userParams: NewUser = newUserSchema.parse(await c.req.json());
 
-        const user = await userService.findUserByEmail(userParams.email!);
-        if (user.length > 0) {
-            throw new HTTPException(400, { message: 'Email already exists' });
-        }
-
-        await userService.create(userParams);
-        return c.json( {message: "User created"}, 201);
-    } catch (err) {
-        if (err instanceof z.ZodError) {
-            throw new HTTPException(400, { message: err.message });
-          }
-        if (!(err instanceof HTTPException)) {
-            throw new HTTPException(500, { message: 'Internal Server Error' });
-        }
-
-        return err.getResponse();
+    const user = await userService.findUserByEmail(userParams.email!);
+    if (user.length > 0) {
+        throw new HTTPException(400, { message: 'Email already exists' });
     }
-});
 
+    await userService.create(userParams);
+    return c.json( {message: "User created"}, 201);
+});
 
 export { userRouter };
