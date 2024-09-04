@@ -1,8 +1,8 @@
-import userSchema from "./user.schema.js";
+import userSchema from './user.schema.js'
 
 const userResponseSchema = userSchema.omit({
-    id: true,
-    created_at: true
+  id: true,
+  created_at: true,
 })
 
-export default userResponseSchema;
+export default userResponseSchema

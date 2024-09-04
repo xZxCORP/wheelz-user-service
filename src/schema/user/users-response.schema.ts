@@ -1,8 +1,9 @@
-import { z } from "zod";
-import userResponseSchema from "./user-response.schema.js";
+import { z } from 'zod'
+
+import userResponseSchema from './user-response.schema.js'
 
 const usersResponseSchema = z.object({
-    users: z.array(userResponseSchema)
-});
+  users: z.array(userResponseSchema),
+})
 
-export default usersResponseSchema;
+export default usersResponseSchema
