@@ -2,7 +2,7 @@ import { database } from "../infrastructure/kysely/database.js";
 import { NewUser, User, UserUpdate } from "../infrastructure/kysely/types.js";
 
 export class UserService {
-    async index(): Promise<User[]> {
+    async index() {
         const result: User[] = await database.selectFrom('user')
         .selectAll()
         .execute();
