@@ -16,12 +16,7 @@ app.onError((error, c) => {
     ? c.json({ message: error.message, data: error.cause }, error.status)
     : c.json({ message: 'Server error' }, 500)
 })
-app.doc('/doc', {
-  openapi: '3.0.0',
-  info: {
-    version: '1.0.0',
-    title: 'Wheelz User API',
-  },
-})
+app.doc31('/openapi.json', { openapi: '3.1.0', info: { title: 'Wheelz User', version: '1' } })
+
 app.route('/users', userRouter)
-app.get('/ui', swaggerUI({ url: '/doc' }))
+app.get('/ui', swaggerUI({ url: '/openapi.json' }))
