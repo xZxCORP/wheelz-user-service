@@ -28,7 +28,7 @@ const migrateDown = async () => {
       if (it.status === 'Success') {
         console.log(chalk.green(`Migration "${it.migrationName}" rolled back successfully`))
       } else if (it.status === 'Error') {
-        console.error(chalk.red(`Failed to roll back migration "${it.migrationName}":`), it.error)
+        console.error(chalk.red(`Failed to roll back migration "${it.migrationName}":`))
       }
     }
   } else {

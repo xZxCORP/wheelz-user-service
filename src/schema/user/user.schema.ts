@@ -5,7 +5,8 @@ const userSchema = z.object({
   firstname: z.string(),
   lastname: z.string(),
   email: z.string().email(),
-  created_at: z.string(),
+  createdAt: z.date(),
 })
+export type UserSchema = z.infer<typeof userSchema>
 
 export default userSchema
