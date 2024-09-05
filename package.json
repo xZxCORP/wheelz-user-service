@@ -6,7 +6,7 @@
     "node": ">= 20.11.0"
   },
   "scripts": {
-    "dev": "tsx src/index.ts",
+    "dev": "tsx --watch src/index.ts",
     "build": "tsc",
     "migrate:up": "tsx src/infrastructure/kysely/cli/migrate-up.ts",
     "migrate:down": "tsx src/infrastructure/kysely/cli/migrate-down.ts",
@@ -15,6 +15,9 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.11.2",
+    "@hono/swagger-ui": "^0.4.1",
+    "@hono/zod-openapi": "^0.16.0",
+    "@hono/zod-validator": "^0.2.2",
     "chalk": "^5.3.0",
     "dotenv": "^16.4.5",
     "dotenv-cli": "^7.4.2",

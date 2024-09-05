@@ -6,10 +6,10 @@ export interface Database {
 
 export interface UserTable {
   id: Generated<number>
-  firstname: ColumnType<string | undefined>
-  lastname: ColumnType<string | undefined>
-  email: ColumnType<string | undefined>
-  created_at: ColumnType<Date, string | undefined, never>
+  firstname: ColumnType<string>
+  lastname: ColumnType<string>
+  email: ColumnType<string>
+  created_at: ColumnType<Date, never, never>
 }
 
 export type User = Selectable<UserTable>

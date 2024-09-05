@@ -1,26 +1,26 @@
-import { Hono } from 'hono'
+import { swaggerUI } from '@hono/swagger-ui'
 import { HTTPException } from 'hono/http-exception'
 import { logger } from 'hono/logger'
-import { z } from 'zod'
+import { trimTrailingSlash } from 'hono/trailing-slash'
 
-import { helloRouter } from './routes/hello.js'
+import { honoApp } from './infrastructure/hono/app.js'
 import { userRouter } from './routes/user.js'
 
-export const app = new Hono()
+export const app = honoApp()
+app.use(trimTrailingSlash())
 app.use(logger())
-app.onError((error, c) => {
-  if (error instanceof HTTPException) {
-    return c.json({ message: error.message }, error.status)
-  } else if (error instanceof z.ZodError) {
-    const errors: string[] = []
-    for (const issue of error.issues) {
-      errors.push(`${issue.path.join(', ')}: ${issue.message}`)
-    }
-    return c.json({ message: { errors } }, 400)
-  } else {
-    return c.json({ message: 'Server error' }, 500)
-  }
-})
 
-app.route('/hello', helloRouter)
-app.route('/', userRouter)
+app.onError((error, c) => {
+  return error instanceof HTTPException
+    ? c.json({ message: error.message, data: error.cause }, error.status)
+    : c.json({ message: 'Server error' }, 500)
+})
+app.doc('/doc', {
+  openapi: '3.0.0',
+  info: {
+    version: '1.0.0',
+    title: 'Wheelz User API',
+  },
+})
+app.route('/users', userRouter)
+app.get('/ui', swaggerUI({ url: '/doc' }))

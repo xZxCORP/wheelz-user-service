@@ -7,7 +7,11 @@ export class UserService {
     return result
   }
   async show(id: number) {
-    const result = await database.selectFrom('user').selectAll().where('id', '=', id).execute()
+    const result = await database
+      .selectFrom('user')
+      .selectAll()
+      .where('id', '=', id)
+      .executeTakeFirst()
 
     return result
   }
@@ -35,7 +39,7 @@ export class UserService {
       .selectFrom('user')
       .selectAll()
       .where('email', '=', email)
-      .execute()
+      .executeTakeFirst()
 
     return result
   }

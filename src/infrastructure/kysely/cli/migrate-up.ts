@@ -28,7 +28,7 @@ const migrateToLatest = async () => {
       if (it.status === 'Success') {
         console.log(chalk.green(`Migration "${it.migrationName}" executed successfully`))
       } else if (it.status === 'Error') {
-        console.error(chalk.red(`Failed to execute migration "${it.migrationName}":`), it.error)
+        console.error(chalk.red(`Failed to execute migration "${it.migrationName}":`), it.status)
       }
     }
   } else {
