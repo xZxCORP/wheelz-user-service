@@ -81,7 +81,6 @@ userRouter.openapi(
   }),
   async (c) => {
     const body = c.req.valid('json')
-    console.log(body)
 
     const existingUser = await userService.findUserByEmail(body.email)
     if (existingUser) {

@@ -11,7 +11,6 @@ app.use(trimTrailingSlash())
 app.use(logger())
 
 app.onError((error, c) => {
-  console.log(error)
   return error instanceof HTTPException
     ? c.json({ message: error.message, data: error.cause }, error.status)
     : c.json({ message: 'Server error' }, 500)
