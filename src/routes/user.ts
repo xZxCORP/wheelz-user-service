@@ -28,6 +28,7 @@ userRouter.openapi(
         description: 'List of users',
       },
     },
+    operationId: 'listUsers',
     tags: ['Users'],
   }),
   async (c) => {
@@ -57,6 +58,8 @@ userRouter.openapi(
             schema: newUserSchema,
           },
         },
+        required: true,
+        description: 'User data',
       },
     },
     responses: {
@@ -77,6 +80,7 @@ userRouter.openapi(
         description: 'Bad request',
       },
     },
+    operationId: 'createUser',
     tags: ['Users'],
   }),
   async (c) => {
@@ -118,6 +122,7 @@ userRouter.openapi(
         description: 'User not found',
       },
     },
+    operationId: 'getUser',
     tags: ['Users'],
   }),
   async (c) => {
@@ -173,6 +178,7 @@ userRouter.openapi(
         description: 'User not found',
       },
     },
+    operationId: 'updateUser',
     tags: ['Users'],
   }),
   async (c) => {
@@ -215,6 +221,7 @@ userRouter.openapi(
         description: 'User not found',
       },
     },
+    operationId: 'deleteUser',
     tags: ['Users'],
   }),
   async (c) => {
