@@ -1,6 +1,5 @@
 services:
   db:
-    container_name: wheelz_user_uservice_local_db
     image: mysql
     restart: always
     ports:
@@ -12,6 +11,26 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
     volumes:
       - wheelz-user-service-local-volume:/var/lib/mysql
+    networks:
+      - user-services
+
+  app:
+    build:
+      dockerfile: Dockerfile
+    # develop:
+    #   watch:
+    #     - action: sync
+    #       path: ./src
+    #       target: /app/src
+    #     - action: rebuild
+    #       path: package.json
+    ports:
+      - '${PORT}:${PORT}'
+    networks:
+      - user-services
 
 volumes:
   wheelz-user-service-local-volume:
+
+networks:
+  user-services:

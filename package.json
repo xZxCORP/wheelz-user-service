@@ -6,6 +6,7 @@
     "node": ">= 20.11.0"
   },
   "scripts": {
+    "start:docker": "node /app/dist/infrastructure/kysely/cli/migrate-up.js && node /app/dist/index.js",
     "dev": "tsx --watch src/index.ts",
     "build": "tsc",
     "migrate:up": "tsx src/infrastructure/kysely/cli/migrate-up.ts",
