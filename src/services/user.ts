@@ -1,3 +1,4 @@
+import { HTTPException } from 'hono/http-exception'
 import { database } from '../infrastructure/kysely/database.js'
 import { NewUser, User, UserUpdate } from '../infrastructure/kysely/types.js'
 
@@ -15,12 +16,27 @@ export class UserService {
 
     return result
   }
-  async create(userParameters: NewUser) {
+  // Sous MySQL on n'a pas la possibilité d'utiliser returning donc on doit passer par cette propriété insertId
+  async create(userParameters: NewUser): Promise<User> {
     const result = await database
       .insertInto('user')
       .values({ ...userParameters })
       .executeTakeFirst()
-    return result
+
+    if (!result || !result.insertId) {
+      throw new HTTPException(500, {message: 'Insertion failed'});
+    }
+
+    // result.insertId est un BigInt on s'assure juste d'avoir un number
+    const insertId = Number(result.insertId);
+
+    const user = await database
+    .selectFrom('user')
+    .selectAll()
+    .where('id', '=', insertId)
+    .executeTakeFirstOrThrow();
+
+    return user;
   }
   update(id: number, userParameters: UserUpdate) {
     const result = database

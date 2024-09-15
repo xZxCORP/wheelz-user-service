@@ -66,10 +66,10 @@ userRouter.openapi(
       201: {
         content: {
           'application/json': {
-            schema: basicResponseSchema,
+            schema: userResponseSchema,
           },
         },
-        description: 'User created successfully',
+        description: 'User details',
       },
       400: {
         content: {
@@ -91,8 +91,17 @@ userRouter.openapi(
       throw new HTTPException(400, { message: 'Email already exists' })
     }
 
-    await userService.create(body)
-    return c.json({ message: 'User created' }, 201)
+    const user = await userService.create(body)
+
+    const mappedUser: UserSchema = {
+      id: user.id,
+      email: user.email,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      createdAt: user.created_at,
+    }
+
+    return c.json({ data: mappedUser }, 201)
   }
 )
 
