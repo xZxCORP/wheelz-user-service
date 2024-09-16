@@ -16,14 +16,20 @@ services:
 
   app:
     build:
-      dockerfile: Dockerfile
-    # develop:
-    #   watch:
-    #     - action: sync
-    #       path: ./src
-    #       target: /app/src
-    #     - action: rebuild
-    #       path: package.json
+      context: .
+      target: development
+    develop:
+      watch:
+        - path: ./src
+          target: /app/src
+          action: sync
+        - path: .env
+          target: /app/.env
+          action: sync+restart
+        - path: package.json
+          action: rebuild
+        - path: package-lock.json
+          action: rebuild
     ports:
       - '${PORT}:${PORT}'
     networks:
