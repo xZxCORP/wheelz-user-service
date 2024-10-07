@@ -7,7 +7,7 @@
   },
   "scripts": {
     "start:docker": "npm run migrate:up && npm run dev",
-    "dev": "tsx --watch src/index.ts",
+    "dev": "tsx src/index.ts",
     "build": "tsc",
     "migrate:up": "tsx src/infrastructure/kysely/cli/migrate-up.ts",
     "migrate:down": "tsx src/infrastructure/kysely/cli/migrate-down.ts",

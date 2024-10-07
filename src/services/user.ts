@@ -1,4 +1,5 @@
 import { HTTPException } from 'hono/http-exception'
+
 import { database } from '../infrastructure/kysely/database.js'
 import { NewUser, User, UserUpdate } from '../infrastructure/kysely/types.js'
 
@@ -35,19 +36,19 @@ export class UserService {
       .executeTakeFirst()
 
     if (!result || !result.insertId) {
-      throw new HTTPException(500, {message: 'Insertion failed'});
+      throw new HTTPException(500, { message: 'Insertion failed' })
     }
 
     // result.insertId est un BigInt on s'assure juste d'avoir un number
-    const insertId = Number(result.insertId);
+    const insertId = Number(result.insertId)
 
     const user = await database
-    .selectFrom('user')
-    .selectAll()
-    .where('id', '=', insertId)
-    .executeTakeFirstOrThrow();
+      .selectFrom('user')
+      .selectAll()
+      .where('id', '=', insertId)
+      .executeTakeFirstOrThrow()
 
-    return user;
+    return user
   }
   update(id: number, userParameters: UserUpdate) {
     const result = database
