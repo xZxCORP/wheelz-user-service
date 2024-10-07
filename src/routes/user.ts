@@ -10,6 +10,7 @@ import userResponseSchema from '../schema/user/user-response.schema.js'
 import updateUserSchema from '../schema/user/user-update.schema.js'
 import usersResponseSchema from '../schema/user/users-response.schema.js'
 import { UserService } from '../services/user.js'
+import queryEmailSchema from '../schema/user/email-query.schema.js'
 
 const userService = new UserService()
 const userRouter = honoApp()
@@ -104,6 +105,25 @@ userRouter.openapi(
     return c.json({ data: mappedUser }, 201)
   }
 )
+
+userRouter.get('/email', async (c) => {
+  const query: string = c.req.query('q') as string;
+
+  const parsedQuery = queryEmailSchema.safeParse(query);
+
+  if (!parsedQuery.success) {
+    throw new HTTPException(400, { message: 'Invalid email format' });
+  }
+
+  const user = await userService.showByEmail(query);
+
+  if (!user) {
+    throw new HTTPException(404, { message: 'User not found' });
+  }
+
+  return c.json({data: user.id}, 200);
+});
+
 
 // GET /users/:id
 userRouter.openapi(

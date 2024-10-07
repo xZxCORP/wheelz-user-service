@@ -16,6 +16,17 @@ export class UserService {
 
     return result
   }
+
+  async showByEmail(email: string) {
+    const result = await database
+    .selectFrom('user')
+    .selectAll()
+    .where('email', '=', email)
+    .executeTakeFirst();
+
+    return result;
+  }
+
   // Sous MySQL on n'a pas la possibilité d'utiliser returning donc on doit passer par cette propriété insertId
   async create(userParameters: NewUser): Promise<User> {
     const result = await database
