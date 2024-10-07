@@ -1,29 +1,29 @@
-import { HTTPException } from 'hono/http-exception'
+import { HTTPException } from 'hono/http-exception';
 
-import { database } from '../infrastructure/kysely/database.js'
-import { NewUser, User, UserUpdate } from '../infrastructure/kysely/types.js'
+import { database } from '../infrastructure/kysely/database.js';
+import { NewUser, User, UserUpdate } from '../infrastructure/kysely/types.js';
 
 export class UserService {
   async index() {
-    const result: User[] = await database.selectFrom('user').selectAll().execute()
-    return result
+    const result: User[] = await database.selectFrom('user').selectAll().execute();
+    return result;
   }
   async show(id: number) {
     const result = await database
       .selectFrom('user')
       .selectAll()
       .where('id', '=', id)
-      .executeTakeFirst()
+      .executeTakeFirst();
 
-    return result
+    return result;
   }
 
   async showByEmail(email: string) {
     const result = await database
-    .selectFrom('user')
-    .selectAll()
-    .where('email', '=', email)
-    .executeTakeFirst();
+      .selectFrom('user')
+      .selectAll()
+      .where('email', '=', email)
+      .executeTakeFirst();
 
     return result;
   }
@@ -33,42 +33,42 @@ export class UserService {
     const result = await database
       .insertInto('user')
       .values({ ...userParameters })
-      .executeTakeFirst()
+      .executeTakeFirst();
 
     if (!result || !result.insertId) {
-      throw new HTTPException(500, { message: 'Insertion failed' })
+      throw new HTTPException(500, { message: 'Insertion failed' });
     }
 
     // result.insertId est un BigInt on s'assure juste d'avoir un number
-    const insertId = Number(result.insertId)
+    const insertId = Number(result.insertId);
 
     const user = await database
       .selectFrom('user')
       .selectAll()
       .where('id', '=', insertId)
-      .executeTakeFirstOrThrow()
+      .executeTakeFirstOrThrow();
 
-    return user
+    return user;
   }
   update(id: number, userParameters: UserUpdate) {
     const result = database
       .updateTable('user')
       .where('id', '=', id)
       .set(userParameters)
-      .executeTakeFirst()
+      .executeTakeFirst();
 
-    return result
+    return result;
   }
   async destroy(id: number) {
-    await database.deleteFrom('user').where('id', '=', id).executeTakeFirst()
+    await database.deleteFrom('user').where('id', '=', id).executeTakeFirst();
   }
   async findUserByEmail(email: string) {
     const result = await database
       .selectFrom('user')
       .selectAll()
       .where('email', '=', email)
-      .executeTakeFirst()
+      .executeTakeFirst();
 
-    return result
+    return result;
   }
 }
