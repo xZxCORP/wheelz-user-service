@@ -1,18 +1,19 @@
-import { createRoute } from '@hono/zod-openapi'
-import { HTTPException } from 'hono/http-exception'
+import { createRoute } from '@hono/zod-openapi';
+import { HTTPException } from 'hono/http-exception';
 
-import { honoApp } from '../infrastructure/hono/app.js'
-import { basicResponseSchema } from '../schema/basic-response.schema.js'
-import { idRequestSchema } from '../schema/id-request.schema.js'
-import { UserSchema } from '../schema/user/user.schema.js'
-import newUserSchema from '../schema/user/user-create.schema.js'
-import userResponseSchema from '../schema/user/user-response.schema.js'
-import updateUserSchema from '../schema/user/user-update.schema.js'
-import usersResponseSchema from '../schema/user/users-response.schema.js'
-import { UserService } from '../services/user.js'
+import { honoApp } from '../infrastructure/hono/app.js';
+import { basicResponseSchema } from '../schema/basic-response.schema.js';
+import { idRequestSchema } from '../schema/id-request.schema.js';
+import queryEmailSchema from '../schema/user/email-query.schema.js';
+import { UserSchema } from '../schema/user/user.schema.js';
+import newUserSchema from '../schema/user/user-create.schema.js';
+import userResponseSchema from '../schema/user/user-response.schema.js';
+import updateUserSchema from '../schema/user/user-update.schema.js';
+import usersResponseSchema from '../schema/user/users-response.schema.js';
+import { UserService } from '../services/user.js';
 
-const userService = new UserService()
-const userRouter = honoApp()
+const userService = new UserService();
+const userRouter = honoApp();
 // GET /users
 userRouter.openapi(
   createRoute({
@@ -32,7 +33,7 @@ userRouter.openapi(
     tags: ['Users'],
   }),
   async (c) => {
-    const users = await userService.index()
+    const users = await userService.index();
     const mappedUsers: UserSchema[] = users.map((user) => {
       return {
         id: user.id,
@@ -40,11 +41,11 @@ userRouter.openapi(
         firstname: user.firstname,
         lastname: user.lastname,
         createdAt: user.created_at,
-      }
-    })
-    return c.json({ data: mappedUsers }, 200)
+      };
+    });
+    return c.json({ data: mappedUsers }, 200);
   }
-)
+);
 
 // POST /users
 userRouter.openapi(
@@ -66,10 +67,10 @@ userRouter.openapi(
       201: {
         content: {
           'application/json': {
-            schema: basicResponseSchema,
+            schema: userResponseSchema,
           },
         },
-        description: 'User created successfully',
+        description: 'User details',
       },
       400: {
         content: {
@@ -84,17 +85,44 @@ userRouter.openapi(
     tags: ['Users'],
   }),
   async (c) => {
-    const body = c.req.valid('json')
+    const body = c.req.valid('json');
 
-    const existingUser = await userService.findUserByEmail(body.email)
+    const existingUser = await userService.findUserByEmail(body.email);
     if (existingUser) {
-      throw new HTTPException(400, { message: 'Email already exists' })
+      throw new HTTPException(400, { message: 'Email already exists' });
     }
 
-    await userService.create(body)
-    return c.json({ message: 'User created' }, 201)
+    const user = await userService.create(body);
+
+    const mappedUser: UserSchema = {
+      id: user.id,
+      email: user.email,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      createdAt: user.created_at,
+    };
+
+    return c.json({ data: mappedUser }, 201);
   }
-)
+);
+
+userRouter.get('/email', async (c) => {
+  const query: string = c.req.query('q') as string;
+
+  const parsedQuery = queryEmailSchema.safeParse(query);
+
+  if (!parsedQuery.success) {
+    throw new HTTPException(400, { message: 'Invalid email format' });
+  }
+
+  const user = await userService.showByEmail(query);
+
+  if (!user) {
+    throw new HTTPException(404, { message: 'User not found' });
+  }
+
+  return c.json({ data: user.id }, 200);
+});
 
 // GET /users/:id
 userRouter.openapi(
@@ -126,11 +154,11 @@ userRouter.openapi(
     tags: ['Users'],
   }),
   async (c) => {
-    const { id } = c.req.valid('param')
-    const user = await userService.show(id)
+    const { id } = c.req.valid('param');
+    const user = await userService.show(id);
 
     if (!user) {
-      throw new HTTPException(404, { message: 'User not found' })
+      throw new HTTPException(404, { message: 'User not found' });
     }
 
     const mappedUser: UserSchema = {
@@ -139,11 +167,11 @@ userRouter.openapi(
       firstname: user.firstname,
       lastname: user.lastname,
       createdAt: user.created_at,
-    }
+    };
 
-    return c.json({ data: mappedUser }, 200)
+    return c.json({ data: mappedUser }, 200);
   }
-)
+);
 
 // PATCH /users/:id
 userRouter.openapi(
@@ -182,18 +210,18 @@ userRouter.openapi(
     tags: ['Users'],
   }),
   async (c) => {
-    const { id } = c.req.valid('param')
-    const body = c.req.valid('json')
+    const { id } = c.req.valid('param');
+    const body = c.req.valid('json');
 
-    const user = await userService.show(id)
+    const user = await userService.show(id);
     if (!user) {
-      throw new HTTPException(404, { message: 'User not found' })
+      throw new HTTPException(404, { message: 'User not found' });
     }
 
-    await userService.update(id, body)
-    return c.json({ message: 'User updated' })
+    await userService.update(id, body);
+    return c.json({ message: 'User updated' });
   }
-)
+);
 
 // DELETE /users/:id
 userRouter.openapi(
@@ -225,16 +253,16 @@ userRouter.openapi(
     tags: ['Users'],
   }),
   async (c) => {
-    const { id } = c.req.valid('param')
+    const { id } = c.req.valid('param');
 
-    const user = await userService.show(id)
+    const user = await userService.show(id);
     if (!user) {
-      throw new HTTPException(404, { message: 'User not found' })
+      throw new HTTPException(404, { message: 'User not found' });
     }
 
-    await userService.destroy(id)
-    return c.json({ message: 'User deleted' })
+    await userService.destroy(id);
+    return c.json({ message: 'User deleted' });
   }
-)
+);
 
-export { userRouter }
+export { userRouter };

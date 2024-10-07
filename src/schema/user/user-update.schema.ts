@@ -1,4 +1,4 @@
-import userSchema from './user.schema.js'
+import userSchema from './user.schema.js';
 
 const updateUserSchema = userSchema
   .omit({
@@ -9,6 +9,6 @@ const updateUserSchema = userSchema
   .partial({
     firstname: true,
     lastname: true,
-  })
+  });
 
-export default updateUserSchema
+export default updateUserSchema;
