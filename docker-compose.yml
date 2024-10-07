@@ -13,8 +13,9 @@ services:
       - wheelz-user-service-local-volume:/var/lib/mysql
     networks:
       - user-services
+      - wheelz-app
 
-  app:
+  user_api:
     build:
       context: .
       target: development
@@ -34,9 +35,12 @@ services:
       - '${PORT}:${PORT}'
     networks:
       - user-services
+      - wheelz-app
 
 volumes:
   wheelz-user-service-local-volume:
 
 networks:
   user-services:
+  wheelz-app:
+    external: true
