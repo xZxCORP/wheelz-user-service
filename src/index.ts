@@ -1,10 +1,15 @@
-import { serve } from '@hono/node-server'
+/* eslint-disable unicorn/no-process-exit */
 
-import { app } from './app.js'
-import { config } from './config.js'
+import { app } from './app.js';
+import { config } from './config.js';
 
-serve({
-  fetch: app.fetch,
-  port: config.PORT,
-  hostname: config.HOST,
-})
+const start = async () => {
+  try {
+    await app.listen({ port: config.PORT, host: '0.0.0.0' });
+  } catch (error) {
+    app.log.error(error);
+    process.exit(1);
+  }
+};
+
+start();

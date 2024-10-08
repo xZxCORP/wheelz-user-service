@@ -1,6 +1,6 @@
-import { type Kysely, sql } from 'kysely'
+import { type Kysely, sql } from 'kysely';
 
-import { Database } from '../types.js'
+import { type Database } from '../types.js';
 
 export const up = async (database: Kysely<Database>): Promise<void> => {
   await database.schema
@@ -10,9 +10,9 @@ export const up = async (database: Kysely<Database>): Promise<void> => {
     .addColumn('lastname', 'varchar(50)', (col) => col.notNull())
     .addColumn('email', 'varchar(70)', (col) => col.notNull().unique())
     .addColumn('created_at', 'timestamp', (col) => col.defaultTo(sql`now()`).notNull())
-    .execute()
-}
+    .execute();
+};
 
 export const down = async (database: Kysely<Database>): Promise<void> => {
-  await database.schema.dropTable('user').execute()
-}
+  await database.schema.dropTable('user').execute();
+};
