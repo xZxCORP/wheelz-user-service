@@ -28,6 +28,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "pino-pretty": "^11.2.2",
     "@types/node": "^20.14.1",
     "@zcorp/eslint-config": "latest",
     "@zcorp/prettier-config": "latest",

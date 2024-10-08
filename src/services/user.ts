@@ -10,6 +10,15 @@ export class UserService {
     const result: User[] = await query.execute();
     return result;
   }
+  async findByEmail(email: string) {
+    const result = await database
+      .selectFrom('user')
+      .selectAll()
+      .where('email', '=', email)
+      .executeTakeFirst();
+
+    return result;
+  }
   async show(id: number) {
     const result = await database
       .selectFrom('user')
