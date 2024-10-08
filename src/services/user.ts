@@ -1,11 +1,13 @@
-import { HTTPException } from 'hono/http-exception';
-
 import { database } from '../infrastructure/kysely/database.js';
-import { NewUser, User, UserUpdate } from '../infrastructure/kysely/types.js';
+import { type NewUser, type User, type UserUpdate } from '../infrastructure/kysely/types.js';
 
 export class UserService {
-  async index() {
-    const result: User[] = await database.selectFrom('user').selectAll().execute();
+  async index(email?: string) {
+    const query = database.selectFrom('user').selectAll();
+    if (email) {
+      query.where('email', '=', email);
+    }
+    const result: User[] = await query.execute();
     return result;
   }
   async show(id: number) {
@@ -18,25 +20,15 @@ export class UserService {
     return result;
   }
 
-  async showByEmail(email: string) {
-    const result = await database
-      .selectFrom('user')
-      .selectAll()
-      .where('email', '=', email)
-      .executeTakeFirst();
-
-    return result;
-  }
-
   // Sous MySQL on n'a pas la possibilité d'utiliser returning donc on doit passer par cette propriété insertId
-  async create(userParameters: NewUser): Promise<User> {
+  async create(userParameters: NewUser): Promise<User | undefined> {
     const result = await database
       .insertInto('user')
       .values({ ...userParameters })
       .executeTakeFirst();
 
     if (!result || !result.insertId) {
-      throw new HTTPException(500, { message: 'Insertion failed' });
+      return undefined;
     }
 
     // result.insertId est un BigInt on s'assure juste d'avoir un number
@@ -61,14 +53,5 @@ export class UserService {
   }
   async destroy(id: number) {
     await database.deleteFrom('user').where('id', '=', id).executeTakeFirst();
-  }
-  async findUserByEmail(email: string) {
-    const result = await database
-      .selectFrom('user')
-      .selectAll()
-      .where('email', '=', email)
-      .executeTakeFirst();
-
-    return result;
   }
 }

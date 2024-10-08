@@ -1,6 +1,6 @@
 import { type Kysely, sql } from 'kysely';
 
-import { Database } from '../types.js';
+import { type Database } from '../types.js';
 
 export const up = async (database: Kysely<Database>): Promise<void> => {
   await database.schema
