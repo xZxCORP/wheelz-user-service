@@ -4,7 +4,7 @@ import mysql2 from 'mysql2';
 import mysql2Promise from 'mysql2/promise';
 
 import { config } from '../../config.js';
-import { Database } from './types.js';
+import { type Database } from './types.js';
 const pool = mysql2Promise.createPool({
   host: config.DB_HOST,
   user: config.DB_USERNAME,

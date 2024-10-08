@@ -1,40 +1,90 @@
-import { createRoute } from '@hono/zod-openapi';
-import { HTTPException } from 'hono/http-exception';
+import { userContract } from '@zcorp/wheelz-contracts';
 
-import { honoApp } from '../infrastructure/hono/app.js';
-import { basicResponseSchema } from '../schema/basic-response.schema.js';
-import { idRequestSchema } from '../schema/id-request.schema.js';
-import queryEmailSchema from '../schema/user/email-query.schema.js';
-import { UserSchema } from '../schema/user/user.schema.js';
-import newUserSchema from '../schema/user/user-create.schema.js';
-import userResponseSchema from '../schema/user/user-response.schema.js';
-import updateUserSchema from '../schema/user/user-update.schema.js';
-import usersResponseSchema from '../schema/user/users-response.schema.js';
+import { server } from '../server.js';
 import { UserService } from '../services/user.js';
 
 const userService = new UserService();
-const userRouter = honoApp();
-// GET /users
-userRouter.openapi(
-  createRoute({
-    method: 'get',
-    path: '/',
-    responses: {
-      200: {
-        content: {
-          'application/json': {
-            schema: usersResponseSchema,
-          },
+
+export const userRouter = server.router(userContract, {
+  async createUser(input) {
+    const existingUser = await userService.findByEmail(input.body.email);
+    if (existingUser) {
+      return {
+        status: 400,
+        body: {
+          message: 'User already exists',
         },
-        description: 'List of users',
+      };
+    }
+    const user = await userService.create(input.body);
+    if (!user) {
+      return {
+        status: 500,
+        body: {
+          message: 'User not created',
+        },
+      };
+    }
+    return {
+      status: 201,
+      body: {
+        data: {
+          id: user.id,
+          email: user.email,
+          firstname: user.firstname,
+          lastname: user.lastname,
+          createdAt: user.created_at,
+        },
       },
-    },
-    operationId: 'listUsers',
-    tags: ['Users'],
-  }),
-  async (c) => {
-    const users = await userService.index();
-    const mappedUsers: UserSchema[] = users.map((user) => {
+    };
+  },
+  async deleteUser(input) {
+    const user = await userService.show(Number(input.params.id));
+    if (!user) {
+      return {
+        status: 404,
+        body: {
+          message: 'User not found',
+        },
+      };
+    }
+    await userService.destroy(Number(input.params.id));
+    return {
+      status: 200,
+      body: {
+        message: 'User deleted',
+      },
+    };
+  },
+  async updateUser(input) {
+    const userExists = await userService.show(Number(input.params.id));
+    if (!userExists) {
+      return {
+        status: 404,
+        body: {
+          message: 'User not found',
+        },
+      };
+    }
+    const user = await userService.update(Number(input.params.id), input.body);
+    if (!user) {
+      return {
+        status: 500,
+        body: {
+          message: 'User not updated',
+        },
+      };
+    }
+    return {
+      status: 200,
+      body: {
+        message: 'User updated',
+      },
+    };
+  },
+  async getUsers(input) {
+    const users = await userService.index(input.query.email);
+    const mappedUsers = users.map((user) => {
       return {
         id: user.id,
         email: user.email,
@@ -43,226 +93,34 @@ userRouter.openapi(
         createdAt: user.created_at,
       };
     });
-    return c.json({ data: mappedUsers }, 200);
-  }
-);
-
-// POST /users
-userRouter.openapi(
-  createRoute({
-    method: 'post',
-    path: '/',
-    request: {
+    return {
+      status: 200,
       body: {
-        content: {
-          'application/json': {
-            schema: newUserSchema,
-          },
-        },
-        required: true,
-        description: 'User data',
+        data: mappedUsers,
       },
-    },
-    responses: {
-      201: {
-        content: {
-          'application/json': {
-            schema: userResponseSchema,
-          },
-        },
-        description: 'User details',
-      },
-      400: {
-        content: {
-          'application/json': {
-            schema: basicResponseSchema,
-          },
-        },
-        description: 'Bad request',
-      },
-    },
-    operationId: 'createUser',
-    tags: ['Users'],
-  }),
-  async (c) => {
-    const body = c.req.valid('json');
-
-    const existingUser = await userService.findUserByEmail(body.email);
-    if (existingUser) {
-      throw new HTTPException(400, { message: 'Email already exists' });
-    }
-
-    const user = await userService.create(body);
-
-    const mappedUser: UserSchema = {
-      id: user.id,
-      email: user.email,
-      firstname: user.firstname,
-      lastname: user.lastname,
-      createdAt: user.created_at,
     };
-
-    return c.json({ data: mappedUser }, 201);
-  }
-);
-
-userRouter.get('/email', async (c) => {
-  const query: string = c.req.query('q') as string;
-
-  const parsedQuery = queryEmailSchema.safeParse(query);
-
-  if (!parsedQuery.success) {
-    throw new HTTPException(400, { message: 'Invalid email format' });
-  }
-
-  const user = await userService.showByEmail(query);
-
-  if (!user) {
-    throw new HTTPException(404, { message: 'User not found' });
-  }
-
-  return c.json({ data: user.id }, 200);
+  },
+  async getUserById(input) {
+    const user = await userService.show(Number(input.params.id));
+    if (!user) {
+      return {
+        status: 404,
+        body: {
+          message: 'User not found',
+        },
+      };
+    }
+    return {
+      status: 200,
+      body: {
+        data: {
+          id: user.id,
+          email: user.email,
+          firstname: user.firstname,
+          lastname: user.lastname,
+          createdAt: user.created_at,
+        },
+      },
+    };
+  },
 });
-
-// GET /users/:id
-userRouter.openapi(
-  createRoute({
-    method: 'get',
-    path: '/{id}',
-    request: {
-      params: idRequestSchema,
-    },
-    responses: {
-      200: {
-        content: {
-          'application/json': {
-            schema: userResponseSchema,
-          },
-        },
-        description: 'User details',
-      },
-      404: {
-        content: {
-          'application/json': {
-            schema: basicResponseSchema,
-          },
-        },
-        description: 'User not found',
-      },
-    },
-    operationId: 'getUser',
-    tags: ['Users'],
-  }),
-  async (c) => {
-    const { id } = c.req.valid('param');
-    const user = await userService.show(id);
-
-    if (!user) {
-      throw new HTTPException(404, { message: 'User not found' });
-    }
-
-    const mappedUser: UserSchema = {
-      id: user.id,
-      email: user.email,
-      firstname: user.firstname,
-      lastname: user.lastname,
-      createdAt: user.created_at,
-    };
-
-    return c.json({ data: mappedUser }, 200);
-  }
-);
-
-// PATCH /users/:id
-userRouter.openapi(
-  createRoute({
-    method: 'patch',
-    path: '/{id}',
-    request: {
-      params: idRequestSchema,
-      body: {
-        content: {
-          'application/json': {
-            schema: updateUserSchema,
-          },
-        },
-      },
-    },
-    responses: {
-      200: {
-        content: {
-          'application/json': {
-            schema: basicResponseSchema,
-          },
-        },
-        description: 'User updated successfully',
-      },
-      404: {
-        content: {
-          'application/json': {
-            schema: basicResponseSchema,
-          },
-        },
-        description: 'User not found',
-      },
-    },
-    operationId: 'updateUser',
-    tags: ['Users'],
-  }),
-  async (c) => {
-    const { id } = c.req.valid('param');
-    const body = c.req.valid('json');
-
-    const user = await userService.show(id);
-    if (!user) {
-      throw new HTTPException(404, { message: 'User not found' });
-    }
-
-    await userService.update(id, body);
-    return c.json({ message: 'User updated' });
-  }
-);
-
-// DELETE /users/:id
-userRouter.openapi(
-  createRoute({
-    method: 'delete',
-    path: '/{id}',
-    request: {
-      params: idRequestSchema,
-    },
-    responses: {
-      200: {
-        content: {
-          'application/json': {
-            schema: basicResponseSchema,
-          },
-        },
-        description: 'User deleted successfully',
-      },
-      404: {
-        content: {
-          'application/json': {
-            schema: basicResponseSchema,
-          },
-        },
-        description: 'User not found',
-      },
-    },
-    operationId: 'deleteUser',
-    tags: ['Users'],
-  }),
-  async (c) => {
-    const { id } = c.req.valid('param');
-
-    const user = await userService.show(id);
-    if (!user) {
-      throw new HTTPException(404, { message: 'User not found' });
-    }
-
-    await userService.destroy(id);
-    return c.json({ message: 'User deleted' });
-  }
-);
-
-export { userRouter };
