@@ -18,10 +18,10 @@ export const app = Fastify({
   },
 });
 
-app.setErrorHandler((error, request, reply) => {
+app.setErrorHandler((error, _, reply) => {
   reply.status(error.statusCode ?? 500).send({ message: error.message, data: error.cause });
 });
-server.registerRouter(userContract, userRouter, app, {
+server.registerRouter(userContract.users, userRouter, app, {
   requestValidationErrorHandler(error, request, reply) {
     return reply.status(400).send({ message: 'Validation failed', data: error.body?.issues });
   },
