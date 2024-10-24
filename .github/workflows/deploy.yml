@@ -39,6 +39,7 @@ jobs:
         with:
           context: .
           push: true
+          target: runner
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/${{ vars.IMAGE_NAME }}:latest
           cache-from: type=local,src=/tmp/.buildx-cache
