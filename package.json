@@ -7,6 +7,7 @@
   },
   "scripts": {
     "start:docker": "npm run migrate:up && npm run dev",
+    "start:docker:prod": "node dist/src/infrastructure/kysely/cli/migrate-up.js && node dist/src/index.js",
     "dev": "tsx src/index.ts",
     "build": "tsc",
     "migrate:up": "tsx src/infrastructure/kysely/cli/migrate-up.ts",
@@ -26,15 +27,15 @@
     "fastify": "^4.28.1",
     "kysely": "^0.27.4",
     "mysql2": "^3.11.0",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "@zcorp/shared-typing-wheelz": "latest",
+    "@zcorp/wheelz-contracts": "latest"
   },
   "devDependencies": {
     "@types/node": "^20.14.1",
     "@zcorp/eslint-config": "latest",
     "@zcorp/prettier-config": "latest",
-    "@zcorp/shared-typing-wheelz": "latest",
     "@zcorp/tsconfig": "latest",
-    "@zcorp/wheelz-contracts": "latest",
     "eslint": "^8.57.0",
     "glob": "^10.4.1",
     "pino-pretty": "^11.2.2",
