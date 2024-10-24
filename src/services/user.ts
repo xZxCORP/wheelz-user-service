@@ -3,9 +3,9 @@ import { type NewUser, type User, type UserUpdate } from '../infrastructure/kyse
 
 export class UserService {
   async index(email?: string) {
-    const query = database.selectFrom('user').selectAll();
+    let query = database.selectFrom('user').selectAll();
     if (email) {
-      query.where('email', '=', email);
+      query = query.where('email', '=', email);
     }
     const result: User[] = await query.execute();
     return result;

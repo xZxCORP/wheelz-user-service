@@ -5,7 +5,7 @@ import { UserService } from '../services/user.js';
 
 const userService = new UserService();
 
-export const userRouter = server.router(userContract, {
+export const userRouter = server.router(userContract.users, {
   async createUser(input) {
     const existingUser = await userService.findByEmail(input.body.email);
     if (existingUser) {
