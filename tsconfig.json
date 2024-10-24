@@ -1,12 +1,9 @@
 {
   "extends": "@zcorp/tsconfig/tsconfig.app.json",
   "compilerOptions": {
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "rootDir": "./src"
   },
-  "include": [
-    "./src/**/*.ts",
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["src/**/*.ts"]
+
 }
