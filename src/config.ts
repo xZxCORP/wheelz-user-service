@@ -10,6 +10,7 @@ const configSchema = z.object({
   DB_USERNAME: z.string().default('wheelz'),
   DB_PASSWORD: z.string().default('root'),
   DB_NAME: z.string().default('user_service_db'),
+  AUTH_SERVICE_URL: z.string().default('http://auth_api:4010'),
 });
 
 const parsedConfig = configSchema.safeParse(process.env);
