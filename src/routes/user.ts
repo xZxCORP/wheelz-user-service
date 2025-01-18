@@ -3,8 +3,8 @@ import { userContract } from '@zcorp/wheelz-contracts';
 import type { FastifyRequest } from 'fastify';
 
 import { server } from '../server.js';
-import { UserService } from '../services/user.js';
 import { roleClient } from '../services/role-external-service.js';
+import { UserService } from '../services/user.js';
 
 const userService = new UserService();
 
@@ -169,5 +169,4 @@ export const userRouter = server.router(userContract.users, {
       };
     },
   },
-
 });
