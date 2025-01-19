@@ -42,6 +42,11 @@ export const userRouter = server.router(userContract.users, {
           },
         };
       }
+
+      const roleResponse = await roleClient.contract.getRoles({ params: { id: String(user.id) } });
+
+      const roles = roleResponse.status === 200 ? roleResponse.body : undefined;
+
       return {
         status: 201,
         body: {
@@ -51,6 +56,7 @@ export const userRouter = server.router(userContract.users, {
             firstname: user.firstname,
             lastname: user.lastname,
             createdAt: user.created_at,
+            ...(roles && { roles }),
           },
         },
       };
@@ -147,12 +153,9 @@ export const userRouter = server.router(userContract.users, {
         };
       }
 
-      const roleResponse = await roleClient.contract.getRoles({ params: { id: userId } });
+      const roleResponse = await roleClient.contract.getRoles({ params: { id: String(user.id) } });
 
-      let roles;
-      if (roleResponse.status === 200) {
-        roles = roleResponse.body;
-      }
+      const roles = roleResponse.status === 200 ? roleResponse.body : undefined;
 
       return {
         status: 200,
@@ -163,7 +166,7 @@ export const userRouter = server.router(userContract.users, {
             firstname: user.firstname,
             lastname: user.lastname,
             createdAt: user.created_at,
-            ...(roles ? { roles } : {}),
+            ...(roles && { roles }),
           },
         },
       };
