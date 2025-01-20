@@ -25,6 +25,7 @@ export interface CompanyTable {
   id: Generated<number>;
   name: ColumnType<string>;
   country: ColumnType<string>;
+  is_identified: ColumnType<boolean>;
   vat_number: ColumnType<string>;
   owner_id: ColumnType<number>;
   headquarters_address: ColumnType<string>;

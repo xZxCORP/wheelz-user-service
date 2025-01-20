@@ -10,11 +10,12 @@ export const up = async (database: Kysely<Database>): Promise<void> => {
     .addColumn('company_size', 'varchar(10)', (col) => col.notNull())
     .addColumn('company_sector', 'varchar(30)', (col) => col.notNull())
     .addColumn('company_type', 'varchar(20)', (col) => col.notNull())
+    .addColumn('is_identified', 'boolean', (col) => col.notNull())
     .addColumn('country', 'varchar(100)', (col) => col.notNull())
     .addColumn('vat_number', 'varchar(20)', (col) => col.notNull())
     .addColumn('headquarters_address', 'varchar(200)', (col) => col.notNull())
-    .addColumn('owner_id', 'integer', (col) =>
-      col.notNull().references('user.id').onDelete('cascade')
+    .addColumn('owner_id', 'bigint', (col) =>
+      col.notNull().references('user.id').onDelete('cascade').unsigned()
     )
     .addColumn('created_at', 'timestamp', (col) => col.defaultTo(sql`now()`).notNull())
     .execute();
@@ -23,11 +24,11 @@ export const up = async (database: Kysely<Database>): Promise<void> => {
     .createTable('membership')
     .addColumn('id', 'serial', (col) => col.primaryKey())
     .addColumn('role', 'varchar(20)', (col) => col.notNull())
-    .addColumn('user_id', 'serial', (col) =>
-      col.references('user.id').onDelete('cascade').notNull()
+    .addColumn('user_id', 'bigint', (col) =>
+      col.references('user.id').onDelete('cascade').notNull().unsigned()
     )
-    .addColumn('company_id', 'serial', (col) =>
-      col.references('company.id').onDelete('cascade').notNull()
+    .addColumn('company_id', 'bigint', (col) =>
+      col.references('company.id').onDelete('cascade').notNull().unsigned()
     )
     .addColumn('created_at', 'timestamp', (col) => col.defaultTo(sql`now()`).notNull())
     .execute();
