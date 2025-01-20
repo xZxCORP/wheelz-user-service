@@ -14,7 +14,7 @@ export const up = async (database: Kysely<Database>): Promise<void> => {
     .addColumn('country', 'varchar(100)', (col) => col.notNull())
     .addColumn('vat_number', 'varchar(20)', (col) => col.notNull())
     .addColumn('headquarters_address', 'varchar(200)', (col) => col.notNull())
-    .addColumn('owner_id', 'bigint', (col) =>
+    .addColumn('manager_id', 'bigint', (col) =>
       col.notNull().references('user.id').onDelete('cascade').unsigned()
     )
     .addColumn('created_at', 'timestamp', (col) => col.defaultTo(sql`now()`).notNull())
