@@ -3,6 +3,7 @@ import { userContract } from '@zcorp/wheelz-contracts';
 import type { FastifyRequest } from 'fastify';
 
 import { server } from '../server.js';
+import { roleClient } from '../services/role-external-service.js';
 import { UserService } from '../services/user.js';
 
 const userService = new UserService();
@@ -41,6 +42,11 @@ export const userRouter = server.router(userContract.users, {
           },
         };
       }
+
+      const roleResponse = await roleClient.contract.getRoles({ params: { id: String(user.id) } });
+
+      const roles = roleResponse.status === 200 ? roleResponse.body : undefined;
+
       return {
         status: 201,
         body: {
@@ -50,6 +56,7 @@ export const userRouter = server.router(userContract.users, {
             firstname: user.firstname,
             lastname: user.lastname,
             createdAt: user.created_at,
+            ...(roles && { roles }),
           },
         },
       };
@@ -134,7 +141,9 @@ export const userRouter = server.router(userContract.users, {
   // Obtenir un utilisateur par ID - Auth requise
   getUserById: {
     handler: async (input) => {
-      const user = await userService.show(Number(input.params.id));
+      const userId = input.params.id;
+      const user = await userService.show(Number(userId));
+
       if (!user) {
         return {
           status: 404,
@@ -143,6 +152,11 @@ export const userRouter = server.router(userContract.users, {
           },
         };
       }
+
+      const roleResponse = await roleClient.contract.getRoles({ params: { id: String(user.id) } });
+
+      const roles = roleResponse.status === 200 ? roleResponse.body : undefined;
+
       return {
         status: 200,
         body: {
@@ -152,6 +166,7 @@ export const userRouter = server.router(userContract.users, {
             firstname: user.firstname,
             lastname: user.lastname,
             createdAt: user.created_at,
+            ...(roles && { roles }),
           },
         },
       };
