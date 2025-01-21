@@ -15,8 +15,10 @@ const isResourceOwner = async (request: FastifyRequest) => {
   }
   const userId = Number(parameters.id);
 
-  //TODO: add admin
-  if (request.userId !== userId) {
+  if (request.user?.roles.includes('admin')) {
+    return;
+  }
+  if (request.user?.userId !== userId) {
     throw new Error('Non autorisé à accéder à cette ressource');
   }
 };
