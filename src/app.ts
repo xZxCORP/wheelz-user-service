@@ -7,9 +7,9 @@ import Fastify from 'fastify';
 
 import { config } from './config.js';
 import { openApiDocument } from './open-api.js';
+import { companyRouter } from './routes/company.js';
 import { userRouter } from './routes/user.js';
 import { server } from './server.js';
-import { companyRouter } from './routes/company.js';
 export const app = Fastify({
   logger: {
     transport: {
