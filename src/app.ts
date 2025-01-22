@@ -2,11 +2,12 @@ import cors from '@fastify/cors';
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUI from '@fastify/swagger-ui';
 import { authPlugin } from '@zcorp/shared-fastify';
-import { userContract } from '@zcorp/wheelz-contracts';
+import { companyContract, userContract } from '@zcorp/wheelz-contracts';
 import Fastify from 'fastify';
 
 import { config } from './config.js';
 import { openApiDocument } from './open-api.js';
+import { companyRouter } from './routes/company.js';
 import { userRouter } from './routes/user.js';
 import { server } from './server.js';
 export const app = Fastify({
@@ -32,6 +33,12 @@ app.register(authPlugin, {
   authServiceUrl: config.AUTH_SERVICE_URL,
 });
 server.registerRouter(userContract.users, userRouter, app, {
+  requestValidationErrorHandler(error, request, reply) {
+    return reply.status(400).send({ message: 'Validation failed', data: error.body?.issues });
+  },
+});
+
+server.registerRouter(companyContract.contract, companyRouter, app, {
   requestValidationErrorHandler(error, request, reply) {
     return reply.status(400).send({ message: 'Validation failed', data: error.body?.issues });
   },
