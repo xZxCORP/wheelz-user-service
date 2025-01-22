@@ -3,7 +3,7 @@ import type { Membership } from '@zcorp/wheelz-contracts';
 import { database } from '../infrastructure/kysely/database.js';
 
 export class MembershipService {
-  async show(companyId: number, userId: number): Promise<Membership | undefined> {
+  async show(companyId: number, userId: number): Promise<Membership | null> {
     const membership = await database
       .selectFrom('membership')
       .where('membership.user_id', '=', userId)
@@ -12,7 +12,7 @@ export class MembershipService {
       .executeTakeFirst();
 
     if (!membership) {
-      return undefined;
+      return null;
     }
 
     const mappedMembership: Membership = {

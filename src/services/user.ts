@@ -1,5 +1,9 @@
 import { database } from '../infrastructure/kysely/database.js';
-import { type NewUser, type User, type UserUpdate } from '../infrastructure/kysely/types.js';
+import {
+  type DatabaseNewUser,
+  type DatabaseUser,
+  type DatabaseUserUpdate,
+} from '../infrastructure/kysely/types.js';
 
 export class UserService {
   async index(email?: string) {
@@ -7,7 +11,7 @@ export class UserService {
     if (email) {
       query = query.where('email', '=', email);
     }
-    const result: User[] = await query.execute();
+    const result: DatabaseUser[] = await query.execute();
     return result;
   }
   async findByEmail(email: string) {
@@ -30,14 +34,14 @@ export class UserService {
   }
 
   // Sous MySQL on n'a pas la possibilité d'utiliser returning donc on doit passer par cette propriété insertId
-  async create(userParameters: NewUser): Promise<User | undefined> {
+  async create(userParameters: DatabaseNewUser): Promise<DatabaseUser | null> {
     const result = await database
       .insertInto('user')
       .values({ ...userParameters })
       .executeTakeFirst();
 
     if (!result || !result.insertId) {
-      return undefined;
+      return null;
     }
 
     // result.insertId est un BigInt on s'assure juste d'avoir un number
@@ -51,7 +55,7 @@ export class UserService {
 
     return user;
   }
-  update(id: number, userParameters: UserUpdate) {
+  update(id: number, userParameters: DatabaseUserUpdate) {
     const result = database
       .updateTable('user')
       .where('id', '=', id)

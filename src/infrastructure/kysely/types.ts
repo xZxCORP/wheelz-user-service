@@ -49,12 +49,12 @@ export interface MembershipTable {
 }
 
 //TODO: Appeler ça les type DB pour différencier des types 'API'
-export type User = Selectable<UserTable>;
-export type NewUser = Insertable<UserTable>;
-export type UserUpdate = Updateable<UserTable>;
+export type DatabaseUser = Selectable<UserTable>;
+export type DatabaseNewUser = Insertable<UserTable>;
+export type DatabaseUserUpdate = Updateable<UserTable>;
 
-export type Company = Selectable<CompanyTable>;
-export type NewCompany = Insertable<CompanyTable>;
+export type DatabaseCompany = Selectable<CompanyTable>;
+export type DatabaseNewCompany = Insertable<CompanyTable>;
 export type DatabaseCompanyUpdate = Updateable<CompanyTable>;
 
 export type Membership = Selectable<MembershipTable>;

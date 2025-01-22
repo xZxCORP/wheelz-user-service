@@ -9,35 +9,25 @@ import type {
 
 import { database } from '../infrastructure/kysely/database.js';
 import type {
+  DatabaseCompany,
   DatabaseCompanyUpdate,
-  NewCompany,
+  DatabaseNewCompany,
+  DatabaseUser,
   NewMembership,
 } from '../infrastructure/kysely/types.js';
 import { MembershipService } from './membership.js';
 import { UserService } from './user.js';
 
-const userService = new UserService();
-const membershipService = new MembershipService();
-
 export class CompanyService {
+  private readonly userService = new UserService();
+  private readonly membershipService = new MembershipService();
+
   async index(): Promise<CompanyWithUser[]> {
     const result = await database.selectFrom('company').selectAll().execute();
 
     const mappedEntities = await Promise.all(
       result.map(async (entity): Promise<CompanyWithUser> => {
-        const mappedEntity: Company = {
-          id: entity.id,
-          name: entity.name,
-          vatNumber: entity.vat_number,
-          country: entity.country,
-          companySector: entity.company_sector,
-          companyType: entity.company_type,
-          companySize: entity.company_size,
-          isIdentified: entity.is_identified,
-          createdAt: String(entity.created_at),
-          ownerId: entity.owner_id,
-          headquartersAddress: entity.headquarters_address,
-        };
+        const mappedEntity = this.companyMapper(entity);
 
         const users = await database
           .selectFrom('user')
@@ -47,25 +37,13 @@ export class CompanyService {
           .execute();
 
         const mappedUsers = await Promise.all(
-          users.map(
-            async (user): Promise<User & { membershipRole: MembershipRole | undefined }> => {
-              const membership = await membershipService.show(entity.id, user.id);
+          users.map(async (user): Promise<User & { membershipRole?: MembershipRole }> => {
+            const membership = await this.membershipService.show(entity.id, user.id);
 
-              let membershipRole: MembershipRole | undefined;
-              membershipRole = membership ? membership.role : undefined;
+            const membershipRole = membership?.role;
 
-              const mappedUser = {
-                id: user.id,
-                firstname: user.firstname,
-                lastname: user.lastname,
-                email: user.email,
-                createdAt: user.created_at,
-                membershipRole: membershipRole,
-              };
-
-              return mappedUser;
-            }
-          )
+            return this.userMapper(user, membershipRole);
+          })
         );
 
         return { ...mappedEntity, users: mappedUsers };
@@ -74,7 +52,7 @@ export class CompanyService {
     return mappedEntities;
   }
 
-  async show(id: number): Promise<CompanyWithUser | undefined> {
+  async show(id: number): Promise<CompanyWithUser | null> {
     const entity = await database
       .selectFrom('company')
       .selectAll()
@@ -82,22 +60,10 @@ export class CompanyService {
       .executeTakeFirst();
 
     if (!entity) {
-      return undefined;
+      return null;
     }
 
-    const mappedEntity: Company = {
-      id: entity.id,
-      name: entity.name,
-      vatNumber: entity.vat_number,
-      country: entity.country,
-      companySector: entity.company_sector,
-      companyType: entity.company_type,
-      companySize: entity.company_size,
-      isIdentified: entity.is_identified,
-      createdAt: String(entity.created_at),
-      ownerId: entity.owner_id,
-      headquartersAddress: entity.headquarters_address,
-    };
+    const mappedEntity = this.companyMapper(entity);
 
     const users = await database
       .selectFrom('user')
@@ -107,29 +73,19 @@ export class CompanyService {
       .execute();
 
     const mappedUsers = await Promise.all(
-      users.map(async (user): Promise<User & { membershipRole: MembershipRole | undefined }> => {
-        const membership = await membershipService.show(entity.id, user.id);
+      users.map(async (user): Promise<User & { membershipRole?: MembershipRole }> => {
+        const membership = await this.membershipService.show(entity.id, user.id);
 
-        let membershipRole: MembershipRole | undefined;
-        membershipRole = membership ? membership.role : undefined;
+        const membershipRole = membership?.role;
 
-        const mappedUser = {
-          id: user.id,
-          firstname: user.firstname,
-          lastname: user.lastname,
-          email: user.email,
-          createdAt: user.created_at,
-          membershipRole: membershipRole,
-        };
-
-        return mappedUser;
+        return this.userMapper(user, membershipRole);
       })
     );
 
     return { ...mappedEntity, users: mappedUsers };
   }
 
-  async showByName(name: string): Promise<CompanyWithUser | undefined> {
+  async showByName(name: string): Promise<CompanyWithUser | null> {
     const entity = await database
       .selectFrom('company')
       .where('name', '=', name)
@@ -137,22 +93,10 @@ export class CompanyService {
       .executeTakeFirst();
 
     if (!entity) {
-      return undefined;
+      return null;
     }
 
-    const mappedEntity: Company = {
-      id: entity.id,
-      name: entity.name,
-      vatNumber: entity.vat_number,
-      country: entity.country,
-      companySector: entity.company_sector,
-      companyType: entity.company_type,
-      companySize: entity.company_size,
-      isIdentified: entity.is_identified,
-      createdAt: String(entity.created_at),
-      ownerId: entity.owner_id,
-      headquartersAddress: entity.headquarters_address,
-    };
+    const mappedEntity = this.companyMapper(entity);
 
     const users = await database
       .selectFrom('user')
@@ -161,13 +105,9 @@ export class CompanyService {
       .select(['user.id', 'user.firstname', 'user.lastname', 'user.email', 'user.created_at'])
       .execute();
 
-    const mappedUsers: User[] = users.map((user) => ({
-      id: user.id,
-      firstname: user.firstname,
-      lastname: user.lastname,
-      email: user.email,
-      createdAt: user.created_at,
-    }));
+    const mappedUsers: User[] = users.map((user) => {
+      return this.userMapper(user);
+    });
 
     return { ...mappedEntity, users: mappedUsers };
   }
@@ -175,14 +115,14 @@ export class CompanyService {
   async create(
     companyParameters: CompanyCreate,
     managerId: number
-  ): Promise<(Company & { users: User[] }) | undefined> {
-    const owner = await userService.show(managerId);
+  ): Promise<(Company & { users: User[] }) | null> {
+    const owner = await this.userService.show(managerId);
 
     if (!owner) {
-      return undefined;
+      return null;
     }
 
-    const mappedParameters: NewCompany = {
+    const mappedParameters: DatabaseNewCompany = {
       name: companyParameters.name,
       headquarters_address: companyParameters.headquartersAddress,
       vat_number: companyParameters.vatNumber,
@@ -200,7 +140,7 @@ export class CompanyService {
       .executeTakeFirst();
 
     if (!companyResult || !companyResult.insertId) {
-      return undefined;
+      return null;
     }
 
     const insertId = Number(companyResult.insertId);
@@ -237,5 +177,35 @@ export class CompanyService {
       .executeTakeFirst();
 
     return await this.show(id);
+  }
+
+  private companyMapper(entity: DatabaseCompany): Company {
+    return {
+      id: entity.id,
+      name: entity.name,
+      vatNumber: entity.vat_number,
+      country: entity.country,
+      companySector: entity.company_sector,
+      companyType: entity.company_type,
+      companySize: entity.company_size,
+      isIdentified: entity.is_identified,
+      createdAt: String(entity.created_at),
+      ownerId: entity.owner_id,
+      headquartersAddress: entity.headquarters_address,
+    };
+  }
+
+  private userMapper(
+    user: DatabaseUser,
+    membershipRole?: MembershipRole
+  ): User & { membershipRole?: MembershipRole } {
+    return {
+      id: user.id,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      email: user.email,
+      createdAt: user.created_at,
+      membershipRole,
+    };
   }
 }

@@ -1,4 +1,4 @@
-import { companyContract, type CompanyCreate, type CompanyWithUser } from '@zcorp/wheelz-contracts';
+import { companyContract, type CompanyCreate } from '@zcorp/wheelz-contracts';
 
 import { server } from '../server.js';
 import { CompanyService } from '../services/company.js';
@@ -23,13 +23,13 @@ export const companyRouter = server.router(companyContract.contract, {
   show: {
     handler: async (input) => {
       const companyId = input.params.id;
-      const company: CompanyWithUser | undefined = await companyService.show(Number(companyId));
+      const company = await companyService.show(Number(companyId));
 
       if (!company) {
         return {
           status: 404,
           body: {
-            message: 'Company not found',
+            message: "L'entreprise n'a pas été trouvé.",
           },
         };
       }
@@ -51,7 +51,7 @@ export const companyRouter = server.router(companyContract.contract, {
         return {
           status: 404,
           body: {
-            message: 'User do not exist',
+            message: "L'utilisateur n'existe pas",
           },
         };
       }
@@ -71,7 +71,7 @@ export const companyRouter = server.router(companyContract.contract, {
         return {
           status: 500,
           body: {
-            message: 'Unexpexted error',
+            message: 'Erreur côté serveur.',
           },
         };
       }
@@ -97,7 +97,7 @@ export const companyRouter = server.router(companyContract.contract, {
         return {
           status: 404,
           body: {
-            message: 'Company not found',
+            message: "L'entreprise n'a pas été trouvé.",
           },
         };
       }
