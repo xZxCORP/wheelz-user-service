@@ -18,6 +18,8 @@ const dialect = new MysqlDialect({
     user: config.DB_USERNAME,
     password: config.DB_PASSWORD,
     port: config.DB_PORT,
+    connectionLimit: 10,
+    maxIdle: 0,
   }),
 });
 
