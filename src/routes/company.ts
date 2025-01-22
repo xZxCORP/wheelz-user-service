@@ -3,9 +3,11 @@ import { companyContract, type CompanyCreate } from '@zcorp/wheelz-contracts';
 import { server } from '../server.js';
 import { CompanyService } from '../services/company.js';
 import { UserService } from '../services/user.js';
+import { MembershipService } from '../services/membership.js';
 
-const companyService = new CompanyService();
 const userService = new UserService();
+const memberService = new MembershipService();
+const companyService = new CompanyService(userService, memberService);
 
 export const companyRouter = server.router(companyContract.contract, {
   index: {

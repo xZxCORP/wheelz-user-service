@@ -19,8 +19,13 @@ import { MembershipService } from './membership.js';
 import { UserService } from './user.js';
 
 export class CompanyService {
-  private readonly userService = new UserService();
-  private readonly membershipService = new MembershipService();
+  private readonly userService: UserService;
+  private readonly membershipService: MembershipService;
+
+  constructor(userService: UserService, membershipService: MembershipService) {
+    this.userService = userService;
+    this.membershipService = membershipService;
+  }
 
   async index(): Promise<CompanyWithUser[]> {
     const result = await database.selectFrom('company').selectAll().execute();
