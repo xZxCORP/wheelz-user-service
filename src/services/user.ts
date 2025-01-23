@@ -9,9 +9,9 @@ import {
 
 export class UserService {
   async index(paginationParameters: PaginationParameters, email?: string): Promise<PaginatedUsers> {
-    const count = database
+    const {count} = await database
       .selectFrom('user')
-      .select(database.fn.countAll().as('count'))
+      .select(database.fn.countAll<number>().as('count'))
       .executeTakeFirstOrThrow();
     let query = database.selectFrom('user').selectAll();
     if (email) {
@@ -38,7 +38,7 @@ export class UserService {
       meta: {
         perPage: paginationParameters.perPage,
         page: paginationParameters.page,
-        total: Number(count),
+        total: count,
       },
     };
   }
