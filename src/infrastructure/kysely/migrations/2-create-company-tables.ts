@@ -15,7 +15,7 @@ export const up = async (database: Kysely<Database>): Promise<void> => {
     .addColumn('vat_number', 'varchar(20)', (col) => col.notNull())
     .addColumn('headquarters_address', 'varchar(200)', (col) => col.notNull())
     .addColumn('owner_id', 'bigint', (col) =>
-      col.notNull().references('user.id').onDelete('cascade').unsigned()
+      col.notNull().references('user.id').onDelete('cascade')
     )
     .addColumn('created_at', 'timestamp', (col) => col.defaultTo(sql`now()`).notNull())
     .execute();
@@ -25,10 +25,10 @@ export const up = async (database: Kysely<Database>): Promise<void> => {
     .addColumn('id', 'serial', (col) => col.primaryKey())
     .addColumn('role', 'varchar(20)', (col) => col.notNull())
     .addColumn('user_id', 'bigint', (col) =>
-      col.references('user.id').onDelete('cascade').notNull().unsigned()
+      col.references('user.id').onDelete('cascade').notNull()
     )
     .addColumn('company_id', 'bigint', (col) =>
-      col.references('company.id').onDelete('cascade').notNull().unsigned()
+      col.references('company.id').onDelete('cascade').notNull()
     )
     .addColumn('created_at', 'timestamp', (col) => col.defaultTo(sql`now()`).notNull())
     .execute();

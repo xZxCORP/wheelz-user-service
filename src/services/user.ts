@@ -61,24 +61,21 @@ export class UserService {
     return result;
   }
 
-  // Sous MySQL on n'a pas la possibilité d'utiliser returning donc on doit passer par cette propriété insertId
   async create(userParameters: DatabaseNewUser): Promise<DatabaseUser | null> {
     const result = await database
       .insertInto('user')
       .values({ ...userParameters })
+      .returning('id')
       .executeTakeFirst();
 
-    if (!result || !result.insertId) {
+    if (!result || !result.id) {
       return null;
     }
-
-    // result.insertId est un BigInt on s'assure juste d'avoir un number
-    const insertId = Number(result.insertId);
 
     const user = await database
       .selectFrom('user')
       .selectAll()
-      .where('id', '=', insertId)
+      .where('id', '=', result.id)
       .executeTakeFirstOrThrow();
 
     return user;
