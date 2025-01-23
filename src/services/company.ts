@@ -31,7 +31,9 @@ export class CompanyService {
 
   async index(paginationParameters: PaginationParameters): Promise<PaginatedCompaniesWithUser> {
     const query = database.selectFrom('company');
-    const {count} = await query.select(database.fn.countAll<number>().as('count')).executeTakeFirstOrThrow();
+    const { count } = await query
+      .select(database.fn.countAll<number>().as('count'))
+      .executeTakeFirstOrThrow();
 
     const result = await query
       .selectAll()

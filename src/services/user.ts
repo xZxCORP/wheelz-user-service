@@ -9,7 +9,7 @@ import {
 
 export class UserService {
   async index(paginationParameters: PaginationParameters, email?: string): Promise<PaginatedUsers> {
-    const {count} = await database
+    const { count } = await database
       .selectFrom('user')
       .select(database.fn.countAll<number>().as('count'))
       .executeTakeFirstOrThrow();
