@@ -1,3 +1,5 @@
+import type { PaginatedUsers, PaginationParameters, User } from '@zcorp/wheelz-contracts';
+
 import { database } from '../infrastructure/kysely/database.js';
 import {
   type DatabaseNewUser,
@@ -6,13 +8,39 @@ import {
 } from '../infrastructure/kysely/types.js';
 
 export class UserService {
-  async index(email?: string) {
+  async index(paginationParameters: PaginationParameters, email?: string): Promise<PaginatedUsers> {
+    const {count} = await database
+      .selectFrom('user')
+      .select(database.fn.countAll<number>().as('count'))
+      .executeTakeFirstOrThrow();
     let query = database.selectFrom('user').selectAll();
     if (email) {
       query = query.where('email', '=', email);
     }
+    query = query
+      .limit(paginationParameters.perPage)
+      .offset((paginationParameters.page - 1) * paginationParameters.perPage);
+
     const result: DatabaseUser[] = await query.execute();
-    return result;
+
+    const mappedUsers = result.map(
+      (user): User => ({
+        id: user.id,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        email: user.email,
+        createdAt: user.created_at,
+      })
+    );
+
+    return {
+      items: mappedUsers,
+      meta: {
+        perPage: paginationParameters.perPage,
+        page: paginationParameters.page,
+        total: count,
+      },
+    };
   }
   async findByEmail(email: string) {
     const result = await database
