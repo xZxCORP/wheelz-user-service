@@ -13,7 +13,7 @@ import type {
   DatabaseCompanyUpdate,
   DatabaseNewCompany,
   DatabaseUser,
-  NewMembership,
+  DatabaseNewMembership,
 } from '../infrastructure/kysely/types.js';
 import { MembershipService } from './membership.js';
 import { UserService } from './user.js';
@@ -150,7 +150,7 @@ export class CompanyService {
 
     const insertId = Number(companyResult.insertId);
 
-    const membershipParameter: NewMembership = {
+    const membershipParameter: DatabaseNewMembership = {
       role: 'manager',
       user_id: owner.id,
       company_id: insertId,

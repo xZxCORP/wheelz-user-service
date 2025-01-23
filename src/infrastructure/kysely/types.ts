@@ -57,6 +57,6 @@ export type DatabaseCompany = Selectable<CompanyTable>;
 export type DatabaseNewCompany = Insertable<CompanyTable>;
 export type DatabaseCompanyUpdate = Updateable<CompanyTable>;
 
-export type Membership = Selectable<MembershipTable>;
-export type NewMembership = Insertable<MembershipTable>;
-export type MembershipUpdate = Updateable<MembershipTable>;
+export type DatabaseMembership = Selectable<MembershipTable>;
+export type DatabaseNewMembership = Insertable<MembershipTable>;
+export type DatabaseMembershipUpdate = Updateable<MembershipTable>;
