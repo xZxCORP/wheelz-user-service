@@ -1,5 +1,5 @@
 import { requireAuth } from '@zcorp/shared-fastify';
-import { userContract } from '@zcorp/wheelz-contracts';
+import { type PaginationParameters, userContract } from '@zcorp/wheelz-contracts';
 import type { FastifyRequest } from 'fastify';
 
 import { server } from '../server.js';
@@ -47,7 +47,7 @@ export const userRouter = server.router(userContract.users, {
 
       const roleResponse = await roleClient.contract.getRoles({ params: { id: String(user.id) } });
 
-      const roles = roleResponse.status === 200 ? roleResponse.body : undefined;
+      const roles = roleResponse.status === 200 ? roleResponse.body : null;
 
       return {
         status: 201,
@@ -123,19 +123,16 @@ export const userRouter = server.router(userContract.users, {
 
   getUsers: {
     handler: async (input) => {
-      const users = await userService.index(input.query.email);
-      const mappedUsers = users.map((user) => ({
-        id: user.id,
-        email: user.email,
-        firstname: user.firstname,
-        lastname: user.lastname,
-        createdAt: user.created_at,
-      }));
+      const email = input.query.email;
+      const paginationParameters: PaginationParameters = {
+        page: input.query.page,
+        perPage: input.query.perPage,
+      };
+
+      const paginatedUsers = await userService.index(paginationParameters, email);
       return {
         status: 200,
-        body: {
-          data: mappedUsers,
-        },
+        body: paginatedUsers,
       };
     },
   },
@@ -157,7 +154,7 @@ export const userRouter = server.router(userContract.users, {
 
       const roleResponse = await roleClient.contract.getRoles({ params: { id: String(user.id) } });
 
-      const roles = roleResponse.status === 200 ? roleResponse.body : undefined;
+      const roles = roleResponse.status === 200 ? roleResponse.body : null;
 
       return {
         status: 200,

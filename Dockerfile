@@ -29,4 +29,4 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm install
 COPY . .
-CMD ["sh", "-c", "./wait-for-it.sh user_db:3306 -- npm run start:docker"]
+CMD ["sh", "-c", "./wait-for-it.sh user_db:5432 -- npm run start:docker"]
