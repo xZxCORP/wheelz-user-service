@@ -14,8 +14,8 @@ import type {
   DatabaseCompany,
   DatabaseCompanyUpdate,
   DatabaseNewCompany,
-  DatabaseUser,
   DatabaseNewMembership,
+  DatabaseUser,
 } from '../infrastructure/kysely/types.js';
 import { MembershipService } from './membership.js';
 import { UserService } from './user.js';
@@ -30,11 +30,14 @@ export class CompanyService {
   }
 
   async index(paginationParameters: PaginationParameters): Promise<PaginatedCompaniesWithUser> {
-    const count = (await database.selectFrom('company').select('id').execute()).length;
-    const result = await database.selectFrom('company').selectAll()
-    .limit(paginationParameters.perPage)
-    .offset((paginationParameters.page - 1) * paginationParameters.perPage)
-    .execute();
+    const query = database.selectFrom('company').selectAll();
+    const collection = await query.execute();
+    const count = collection.length;
+
+    const result = await query
+      .limit(paginationParameters.perPage)
+      .offset((paginationParameters.page - 1) * paginationParameters.perPage)
+      .execute();
 
     const mappedEntities = await Promise.all(
       result.map(async (entity): Promise<CompanyWithUser> => {
@@ -65,8 +68,8 @@ export class CompanyService {
       meta: {
         page: paginationParameters.page,
         perPage: paginationParameters.perPage,
-        total: count
-      }
+        total: count,
+      },
     };
   }
 

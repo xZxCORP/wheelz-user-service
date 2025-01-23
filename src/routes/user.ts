@@ -1,5 +1,5 @@
 import { requireAuth } from '@zcorp/shared-fastify';
-import { userContract, type PaginationParameters } from '@zcorp/wheelz-contracts';
+import { type PaginationParameters, userContract } from '@zcorp/wheelz-contracts';
 import type { FastifyRequest } from 'fastify';
 
 import { server } from '../server.js';
@@ -126,8 +126,8 @@ export const userRouter = server.router(userContract.users, {
       const email = input.query.email;
       const paginationParameters: PaginationParameters = {
         page: input.query.page,
-        perPage: input.query.perPage
-      }
+        perPage: input.query.perPage,
+      };
 
       const paginatedUsers = await userService.index(paginationParameters, email);
       return {
