@@ -12,8 +12,8 @@ import type {
   DatabaseCompany,
   DatabaseCompanyUpdate,
   DatabaseNewCompany,
-  DatabaseUser,
   DatabaseNewMembership,
+  DatabaseUser,
 } from '../infrastructure/kysely/types.js';
 import { MembershipService } from './membership.js';
 import { UserService } from './user.js';
@@ -142,18 +142,17 @@ export class CompanyService {
     const companyResult = await database
       .insertInto('company')
       .values({ ...mappedParameters })
+      .returning('id')
       .executeTakeFirst();
 
-    if (!companyResult || !companyResult.insertId) {
+    if (!companyResult || !companyResult.id) {
       return null;
     }
-
-    const insertId = Number(companyResult.insertId);
 
     const membershipParameter: DatabaseNewMembership = {
       role: 'manager',
       user_id: owner.id,
-      company_id: insertId,
+      company_id: companyResult.id,
     };
 
     await database
@@ -161,7 +160,7 @@ export class CompanyService {
       .values({ ...membershipParameter })
       .execute();
 
-    return await this.show(insertId);
+    return await this.show(companyResult.id);
   }
 
   async update(id: number, companyParameters: CompanyUpdate) {

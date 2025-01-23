@@ -2,8 +2,8 @@ import { companyContract, type CompanyCreate } from '@zcorp/wheelz-contracts';
 
 import { server } from '../server.js';
 import { CompanyService } from '../services/company.js';
-import { UserService } from '../services/user.js';
 import { MembershipService } from '../services/membership.js';
+import { UserService } from '../services/user.js';
 
 const userService = new UserService();
 const memberService = new MembershipService();
