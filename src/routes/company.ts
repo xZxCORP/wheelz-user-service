@@ -11,14 +11,13 @@ const companyService = new CompanyService(userService, memberService);
 
 export const companyRouter = server.router(companyContract.contract, {
   index: {
-    handler: async () => {
-      const companies = await companyService.index();
+    handler: async (input) => {
+      const paginationParameters = input.query;
+      const companies = await companyService.index(paginationParameters);
 
       return {
         status: 200,
-        body: {
-          data: companies,
-        },
+        body: companies
       };
     },
   },

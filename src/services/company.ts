@@ -4,6 +4,8 @@ import type {
   CompanyUpdate,
   CompanyWithUser,
   MembershipRole,
+  PaginatedCompaniesWithUser,
+  PaginationParameters,
   User,
 } from '@zcorp/wheelz-contracts';
 
@@ -27,8 +29,12 @@ export class CompanyService {
     this.membershipService = membershipService;
   }
 
-  async index(): Promise<CompanyWithUser[]> {
-    const result = await database.selectFrom('company').selectAll().execute();
+  async index(paginationParameters: PaginationParameters): Promise<PaginatedCompaniesWithUser> {
+    const count = (await database.selectFrom('company').select('id').execute()).length;
+    const result = await database.selectFrom('company').selectAll()
+    .limit(paginationParameters.perPage)
+    .offset((paginationParameters.page - 1) * paginationParameters.perPage)
+    .execute();
 
     const mappedEntities = await Promise.all(
       result.map(async (entity): Promise<CompanyWithUser> => {
@@ -54,7 +60,14 @@ export class CompanyService {
         return { ...mappedEntity, users: mappedUsers };
       })
     );
-    return mappedEntities;
+    return {
+      items: mappedEntities,
+      meta: {
+        page: paginationParameters.page,
+        perPage: paginationParameters.perPage,
+        total: count
+      }
+    };
   }
 
   async show(id: number): Promise<CompanyWithUser | null> {
