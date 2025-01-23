@@ -30,11 +30,11 @@ export class CompanyService {
   }
 
   async index(paginationParameters: PaginationParameters): Promise<PaginatedCompaniesWithUser> {
-    const query = database.selectFrom('company').selectAll();
-    const collection = await query.execute();
-    const count = collection.length;
+    const query = database.selectFrom('company');
+    const count = await query.select(database.fn.countAll().as('count')).executeTakeFirstOrThrow();
 
     const result = await query
+      .selectAll()
       .limit(paginationParameters.perPage)
       .offset((paginationParameters.page - 1) * paginationParameters.perPage)
       .execute();
@@ -68,7 +68,7 @@ export class CompanyService {
       meta: {
         page: paginationParameters.page,
         perPage: paginationParameters.perPage,
-        total: count,
+        total: Number(count),
       },
     };
   }

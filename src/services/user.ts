@@ -9,12 +9,14 @@ import {
 
 export class UserService {
   async index(paginationParameters: PaginationParameters, email?: string): Promise<PaginatedUsers> {
+    const count = database
+      .selectFrom('user')
+      .select(database.fn.countAll().as('count'))
+      .executeTakeFirstOrThrow();
     let query = database.selectFrom('user').selectAll();
     if (email) {
       query = query.where('email', '=', email);
     }
-
-    const count = query.execute.length;
     query = query
       .limit(paginationParameters.perPage)
       .offset((paginationParameters.page - 1) * paginationParameters.perPage);
@@ -36,7 +38,7 @@ export class UserService {
       meta: {
         perPage: paginationParameters.perPage,
         page: paginationParameters.page,
-        total: count,
+        total: Number(count),
       },
     };
   }
