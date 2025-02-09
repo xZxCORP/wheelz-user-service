@@ -152,7 +152,9 @@ export const userRouter = server.router(userContract.users, {
         };
       }
 
-      const roleResponse = await roleClient.contract.getRoles({ params: { id: String(userWithCompany.id) } });
+      const roleResponse = await roleClient.contract.getRoles({
+        params: { id: String(userWithCompany.id) },
+      });
 
       const roles = roleResponse.status === 200 ? roleResponse.body : null;
 
