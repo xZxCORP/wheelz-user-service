@@ -28,7 +28,7 @@ export class UserService {
       result.map(async (user): Promise<UserWithCompany> => {
         const company = await database
         .selectFrom('company')
-        .selectAll()
+        .selectAll('company')
         .innerJoin('membership', 'company.id', 'membership.company_id')
         .innerJoin('user', 'membership.user_id', 'user.id')
         .where('membership.user_id', '=', user.id)
@@ -103,7 +103,7 @@ export class UserService {
 
     const company = await database
       .selectFrom('company')
-      .selectAll()
+      .selectAll('company')
       .innerJoin('membership', 'company.id', 'membership.company_id')
       .innerJoin('user', 'membership.user_id', 'user.id')
       .where('membership.user_id', '=', id)
