@@ -1,5 +1,4 @@
 import type {
-  Company,
   PaginatedUsers,
   PaginationParameters,
   UserWithCompany,
@@ -7,6 +6,7 @@ import type {
 
 import { database } from '../infrastructure/kysely/database.js';
 import {
+  type DatabaseCompany,
   type DatabaseNewUser,
   type DatabaseUser,
   type DatabaseUserUpdate,
@@ -38,38 +38,7 @@ export class UserService {
           .where('membership.user_id', '=', user.id)
           .executeTakeFirst();
 
-        if (!company) {
-          return {
-            id: user.id,
-            firstname: user.firstname,
-            lastname: user.lastname,
-            email: user.email,
-            createdAt: user.created_at,
-          };
-        }
-
-        const mappedCompany: Company = {
-          id: company.id,
-          name: company.name,
-          vatNumber: company.vat_number,
-          headquartersAddress: company.headquarters_address,
-          country: company.country,
-          companySector: company.company_sector,
-          companySize: company.company_size,
-          companyType: company.company_type,
-          isIdentified: company.is_identified,
-          createdAt: String(company.created_at),
-          ownerId: company.owner_id,
-        };
-
-        return {
-          id: user.id,
-          firstname: user.firstname,
-          lastname: user.lastname,
-          email: user.email,
-          createdAt: user.created_at,
-          company: mappedCompany,
-        };
+        return this.mapUserWithCompany(user, company);
       })
     );
 
@@ -83,7 +52,6 @@ export class UserService {
     };
   }
 
-  // On keep ça ?
   async findByEmail(email: string) {
     const result = await database
       .selectFrom('user')
@@ -113,38 +81,7 @@ export class UserService {
       .where('membership.user_id', '=', id)
       .executeTakeFirst();
 
-    if (!company) {
-      return {
-        id: user.id,
-        firstname: user.firstname,
-        lastname: user.lastname,
-        email: user.email,
-        createdAt: user.created_at,
-      };
-    }
-
-    const mappedCompany: Company = {
-      id: company.id,
-      name: company.name,
-      vatNumber: company.vat_number,
-      headquartersAddress: company.headquarters_address,
-      country: company.country,
-      companySector: company.company_sector,
-      companySize: company.company_size,
-      companyType: company.company_type,
-      isIdentified: company.is_identified,
-      createdAt: String(company.created_at),
-      ownerId: company.owner_id,
-    };
-
-    return {
-      id: user.id,
-      firstname: user.firstname,
-      lastname: user.lastname,
-      email: user.email,
-      createdAt: user.created_at,
-      company: mappedCompany,
-    };
+    return this.mapUserWithCompany(user, company);
   }
 
   async create(userParameters: DatabaseNewUser): Promise<DatabaseUser | null> {
@@ -178,5 +115,37 @@ export class UserService {
   }
   async destroy(id: number) {
     await database.deleteFrom('user').where('id', '=', id).executeTakeFirst();
+  }
+
+  private async mapUserWithCompany(
+    user: DatabaseUser,
+    company: DatabaseCompany | undefined
+  ): Promise<UserWithCompany> {
+    let mappedCompany = undefined;
+
+    if (company) {
+      mappedCompany = {
+        id: company.id,
+        name: company.name,
+        vatNumber: company.vat_number,
+        headquartersAddress: company.headquarters_address,
+        country: company.country,
+        companySector: company.company_sector,
+        companySize: company.company_size,
+        companyType: company.company_type,
+        isIdentified: company.is_identified,
+        createdAt: String(company.created_at),
+        ownerId: company.owner_id,
+      };
+    }
+
+    return {
+      id: user.id,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      email: user.email,
+      createdAt: user.created_at,
+      company: mappedCompany,
+    };
   }
 }
