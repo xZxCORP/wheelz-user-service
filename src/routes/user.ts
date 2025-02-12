@@ -121,7 +121,7 @@ export const userRouter = server.router(userContract.users, {
     },
   },
 
-  getUsers: {
+  getPaginatedUsers: {
     handler: async (input) => {
       const email = input.query.email;
       const paginationParameters: PaginationParameters = {
@@ -129,10 +129,21 @@ export const userRouter = server.router(userContract.users, {
         perPage: input.query.perPage,
       };
 
-      const paginatedUsers = await userService.index(paginationParameters, email);
+      const paginatedUsers = await userService.paginatedIndex(paginationParameters, email);
       return {
         status: 200,
         body: paginatedUsers,
+      };
+    },
+  },
+  getRawUsers: {
+    handler: async (input) => {
+      const email = input.query.email;
+
+      const rawUsers = await userService.rawIndex(email);
+      return {
+        status: 200,
+        body: rawUsers,
       };
     },
   },

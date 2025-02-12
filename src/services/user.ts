@@ -1,6 +1,8 @@
 import type {
+  Company,
   PaginatedUsers,
   PaginationParameters,
+  User,
   UserWithCompany,
 } from '@zcorp/wheelz-contracts';
 
@@ -13,7 +15,10 @@ import {
 } from '../infrastructure/kysely/types.js';
 
 export class UserService {
-  async index(paginationParameters: PaginationParameters, email?: string): Promise<PaginatedUsers> {
+  async paginatedIndex(
+    paginationParameters: PaginationParameters,
+    email?: string
+  ): Promise<PaginatedUsers> {
     const { count } = await database
       .selectFrom('user')
       .select(database.fn.countAll<number>().as('count'))
@@ -25,23 +30,14 @@ export class UserService {
     query = query
       .limit(paginationParameters.perPage)
       .offset((paginationParameters.page - 1) * paginationParameters.perPage);
-
     const result: DatabaseUser[] = await query.execute();
-
     const mappedUsers = await Promise.all(
       result.map(async (user): Promise<UserWithCompany> => {
-        const company = await database
-          .selectFrom('company')
-          .selectAll('company')
-          .innerJoin('membership', 'company.id', 'membership.company_id')
-          .innerJoin('user', 'membership.user_id', 'user.id')
-          .where('membership.user_id', '=', user.id)
-          .executeTakeFirst();
+        const company = await this.getCompanyOfUser(user.id);
 
         return this.mapUserWithCompany(user, company);
       })
     );
-
     return {
       items: mappedUsers,
       meta: {
@@ -50,6 +46,21 @@ export class UserService {
         total: count,
       },
     };
+  }
+  async rawIndex(email?: string): Promise<User[]> {
+    let query = database.selectFrom('user').selectAll();
+    if (email) {
+      query = query.where('email', '=', email);
+    }
+    const result: DatabaseUser[] = await query.execute();
+    const mappedUsers = await Promise.all(
+      result.map(async (user): Promise<UserWithCompany> => {
+        const company = await this.getCompanyOfUser(user.id);
+
+        return this.mapUserWithCompany(user, company);
+      })
+    );
+    return mappedUsers;
   }
 
   async findByEmail(email: string) {
@@ -116,7 +127,30 @@ export class UserService {
   async destroy(id: number) {
     await database.deleteFrom('user').where('id', '=', id).executeTakeFirst();
   }
-
+  getCompanyOfUser(id: number): Promise<DatabaseCompany | undefined> {
+    return database
+      .selectFrom('company')
+      .selectAll('company')
+      .innerJoin('membership', 'company.id', 'membership.company_id')
+      .innerJoin('user', 'membership.user_id', 'user.id')
+      .where('membership.user_id', '=', id)
+      .executeTakeFirst();
+  }
+  private mapCompany(company: DatabaseCompany): Company {
+    return {
+      id: company.id,
+      name: company.name,
+      vatNumber: company.vat_number,
+      headquartersAddress: company.headquarters_address,
+      country: company.country,
+      companySector: company.company_sector,
+      companySize: company.company_size,
+      companyType: company.company_type,
+      isIdentified: company.is_identified,
+      createdAt: String(company.created_at),
+      ownerId: company.owner_id,
+    };
+  }
   private async mapUserWithCompany(
     user: DatabaseUser,
     company: DatabaseCompany | undefined
@@ -124,19 +158,7 @@ export class UserService {
     let mappedCompany = undefined;
 
     if (company) {
-      mappedCompany = {
-        id: company.id,
-        name: company.name,
-        vatNumber: company.vat_number,
-        headquartersAddress: company.headquarters_address,
-        country: company.country,
-        companySector: company.company_sector,
-        companySize: company.company_size,
-        companyType: company.company_type,
-        isIdentified: company.is_identified,
-        createdAt: String(company.created_at),
-        ownerId: company.owner_id,
-      };
+      mappedCompany = this.mapCompany(company);
     }
 
     return {
