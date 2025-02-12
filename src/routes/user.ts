@@ -121,7 +121,7 @@ export const userRouter = server.router(userContract.users, {
     },
   },
 
-  getUsers: {
+  getPaginatedUsers: {
     handler: async (input) => {
       const email = input.query.email;
       const paginationParameters: PaginationParameters = {
@@ -129,10 +129,21 @@ export const userRouter = server.router(userContract.users, {
         perPage: input.query.perPage,
       };
 
-      const paginatedUsers = await userService.index(paginationParameters, email);
+      const paginatedUsers = await userService.paginatedIndex(paginationParameters, email);
       return {
         status: 200,
         body: paginatedUsers,
+      };
+    },
+  },
+  getRawUsers: {
+    handler: async (input) => {
+      const query = input.query.query;
+
+      const rawUsers = await userService.rawIndex(query);
+      return {
+        status: 200,
+        body: rawUsers,
       };
     },
   },
@@ -141,9 +152,9 @@ export const userRouter = server.router(userContract.users, {
   getUserById: {
     handler: async (input) => {
       const userId = input.params.id;
-      const user = await userService.show(Number(userId));
+      const userWithCompany = await userService.show(Number(userId));
 
-      if (!user) {
+      if (!userWithCompany) {
         return {
           status: 404,
           body: {
@@ -152,22 +163,20 @@ export const userRouter = server.router(userContract.users, {
         };
       }
 
-      const roleResponse = await roleClient.contract.getRoles({ params: { id: String(user.id) } });
+      const roleResponse = await roleClient.contract.getRoles({
+        params: { id: String(userWithCompany.id) },
+      });
 
       const roles = roleResponse.status === 200 ? roleResponse.body : null;
 
+      const user = {
+        ...userWithCompany,
+        roles: roles ?? userWithCompany.roles,
+      };
+
       return {
         status: 200,
-        body: {
-          data: {
-            id: user.id,
-            email: user.email,
-            firstname: user.firstname,
-            lastname: user.lastname,
-            createdAt: user.created_at,
-            ...(roles && { roles }),
-          },
-        },
+        body: { data: user },
       };
     },
   },
