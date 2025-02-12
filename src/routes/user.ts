@@ -138,9 +138,9 @@ export const userRouter = server.router(userContract.users, {
   },
   getRawUsers: {
     handler: async (input) => {
-      const email = input.query.email;
+      const query = input.query.query;
 
-      const rawUsers = await userService.rawIndex(email);
+      const rawUsers = await userService.rawIndex(query);
       return {
         status: 200,
         body: rawUsers,

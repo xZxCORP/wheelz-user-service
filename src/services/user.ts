@@ -47,10 +47,16 @@ export class UserService {
       },
     };
   }
-  async rawIndex(email?: string): Promise<User[]> {
+  async rawIndex(queryString?: string): Promise<User[]> {
     let query = database.selectFrom('user').selectAll();
-    if (email) {
-      query = query.where('email', '=', email);
+    if (queryString) {
+      query = query.where((eb) =>
+        eb.or([
+          eb('email', 'ilike', `%${queryString}%`),
+          eb('firstname', 'ilike', `%${queryString}%`),
+          eb('lastname', 'ilike', `%${queryString}%`),
+        ])
+      );
     }
     const result: DatabaseUser[] = await query.execute();
     const mappedUsers = await Promise.all(

@@ -24,7 +24,7 @@
     "@ts-rest/open-api": "^3.52.0",
     "@zcorp/shared-fastify": "latest",
     "@zcorp/shared-typing-wheelz": "latest",
-    "@zcorp/wheelz-contracts": "^1.1.23",
+    "@zcorp/wheelz-contracts": "^1.1.25",
     "chalk": "^5.4.1",
     "dotenv": "^16.4.7",
     "dotenv-cli": "^7.4.4",
