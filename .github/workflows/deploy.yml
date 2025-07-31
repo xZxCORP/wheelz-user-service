@@ -50,17 +50,13 @@ jobs:
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
-      - name: Trigger webhook
-        uses: fjogeleit/http-request-action@v1
+      - name: Trigger deployment
+        uses: peter-evans/repository-dispatch@v3
         with:
-          url: "https://webhook.zcorp.ovh/webhook/docker-service"
-          method: "PUT"
-          customHeaders: '{"Content-Type": "application/json"}'
-          preventFailureOnNoResponse: true
-          timeout: 60000
-          data: |
+          token: ${{ secrets.INFRA_REPO_TOKEN }}
+          repository: xZxCORP/infra
+          event-type: deploy-microservice
+          client-payload: |
             {
-              "service": "wheelz_user",
-              "image": "${{ secrets.DOCKER_USERNAME }}/${{ vars.IMAGE_NAME }}:latest",
-              "secret": "${{ secrets.WEBHOOK_SECRET }}"
+              "microservice_name": "wheelz_user"
             }
