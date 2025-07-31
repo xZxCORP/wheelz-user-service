@@ -8,6 +8,7 @@ import Fastify from 'fastify';
 import { config } from './config.js';
 import { openApiDocument } from './open-api.js';
 import { companyRouter } from './routes/company.js';
+import { healthRouter } from './routes/health.js';
 import { userRouter } from './routes/user.js';
 import { server } from './server.js';
 export const app = Fastify({
@@ -43,6 +44,7 @@ server.registerRouter(companyContract.contract, companyRouter, app, {
     return reply.status(400).send({ message: 'Validation failed', data: error.body?.issues });
   },
 });
+server.registerRouter(userContract.health, healthRouter, app);
 app
   .register(fastifySwagger, {
     transformObject: () => ({
